@@ -16,45 +16,45 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Blur background when locked */
+        .blur-overlay {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
     </style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+<body class="text-gray-800 antialiased min-h-screen flex flex-col relative">
 
-    <!-- Navbar -->
-    <nav class="bg-white shadow-sm border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-3">
-                    <div class="bg-blue-600 p-2 rounded-lg text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="font-bold text-xl text-gray-900">Audio Transcriber for IDI <span class="text-gray-400 font-normal text-sm border-l ml-2 pl-2 border-gray-300">ສ້າງໂດຍ Sengdeuan Boutdavong</span></span>
-                        <span class="text-xs font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 tracking-wide">ສຳລັບນຳໄປໃຊ້ກັບໜ້າເວັບ Google Gemini ✨</span>
-                    </div>
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 blur-overlay transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-transform duration-300 scale-100">
+            <div class="text-center mb-6">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
                 </div>
+                <h2 class="text-2xl font-bold text-gray-900">ເຂົ້າສູ່ລະບົບ (Login)</h2>
+                <p class="text-sm text-gray-500 mt-2">ກະລຸນາປ້ອນລະຫັດຜ່ານເພື່ອເຂົ້າໃຊ້ງານ Audio Transcriber</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <input type="password" id="password-input" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-3 outline-none transition" placeholder="ປ້ອນລະຫັດຜ່ານ..." onkeypress="handleLoginKeyPress(event)">
+                    <p id="login-error" class="text-red-500 text-xs mt-2 hidden">ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ, ກະລຸນາລອງໃໝ່!</p>
+                </div>
+                <button onclick="checkPassword()" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-3 text-center transition">
+                    ເຂົ້າສູ່ລະບົບ
+                </button>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <!-- Main Content -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            <!-- Left Column: Controls -->
-            <div class="lg:col-span-5 space-y-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
-                        ການຕັ້ງຄ່າກ່ອນສ້າງຄຳສັ່ງ (Settings)
-                    </h2>
-                    
-                    <!-- Language Selection -->
-                    <div class="mb-5">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">ເລືອກພາສາ (Language)</label>
-                        <select id="language-select" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition">
-                            <option value="lao">ພາສາລາວ (Lao)</option>
+    <!-- Main Content Wrapper (Hidden initially) -->
+    <div id="main-app" class="flex-col min-h-screen opacity-0 pointer-events-none transition-opacity duration-500 hidden">
+        <!-- Navbar -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
                             <option value="english">ພາສາອັງກິດ (English)</option>
                         </select>
                     </div>
@@ -63,16 +63,31 @@
                     <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-2">ຮູບແບບການຖອດສຽງ (Transcription Mode)</label>
                         <select id="mode-select" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition">
-                            <option value="general">ຖອດສຽງທົ່ວໄປ (General)</option>
-                            <option value="nofiller">ຕັດຄຳໂຕງໂຕ້ຍອອກ (No fillers: ເອີ, ອ່າ...)</option>
-                            <option value="interview">ແບບສຳພາດ (ແຍກ Q - R)</option>
-                            <option value="summary_natural">ແບບສັງລວມໃຫ້ເຂົ້າໃຈ ແຕ່ຮັກສາຄວາມເປັນທຳມະຊາດ (Summary & Natural)</option>
+                            <option value="general">ຖອດສຽງທົ່ວໄປ (Word-for-word + ແຍກ Q-R ສະເໝີ)</option>
+                            <option value="idi_intelligent_verbatim">ຖອດສຽງແບບສະອາດ (ຕັດຄຳຂີ້ເຫຍື້ອ, False starts + ແຍກ Q-R)</option>
+                            <option value="general_clean_original">ຖອດສຽງທົ່ວໄປ, ຕັດແຕ່ປະໂຍກທີ່ບໍ່ຄົບຖ້ວນ (+ ແຍກ Q-R)</option>
+                            <option value="general_clean_balanced">ຖອດສຽງທົ່ວໄປ, ຕັດປະໂຫຍກບໍ່ຄົບຖ້ວນ, ຕັດໂຕງໂຕ້ຍບາງສ່ວນ (+ ແຍກ Q-R)</option>
+                            <option value="nofiller">ຕັດຄຳໂຕງໂຕ້ຍອອກ (No fillers + ແຍກ Q-R)</option>
+                            <option value="interview">ແບບສຳພາດ (ແຍກ Q-R ມາດຕະຖານ)</option>
+                            <option value="summary_natural">ແບບສັງລວມໃຫ້ເຂົ້າໃຈ ແຕ່ຮັກສາຄວາມເປັນທຳມະຊາດ (+ ແຍກ Q-R)</option>
                             <option value="summary_interview">ແບບສຳພາດ + ສັງລວມທຳມະຊາດ (ແຍກ Q-R ແລະ ຕັດໂຕງໂຕ້ຍ)</option>
-                            <option value="interview_natural_full">ແບບສຳພາດ+ຮັກສາແບບທຳມະຊາດ (ແຍກ Q-R, ຄົບຖ້ວນ ແລະ ຕັດໂຕງໂຕ້ຍ)</option>
+                            <option value="interview_natural_full">ແບບສຳພາດ + ຮັກສາແບບທຳມະຊາດ (ແຍກ Q-R, ຄົບຖ້ວນ)</option>
                         </select>
                     </div>
 
-                    <!-- File Upload (Mock for Prompt gen) -->
+                    <!-- Timestamp Toggle -->
+                    <div class="mb-5 flex items-center gap-2">
+                        <input type="checkbox" id="timestamp-toggle" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer transition">
+                        <label for="timestamp-toggle" class="text-sm font-medium text-gray-700 cursor-pointer">ເພີ່ມເວລາ (Timestamps) ໃສ່ໜ້າແຖວ (ເຊື່ອມຕໍ່ເວລາກັນອັດຕະໂນມັດ)</label>
+                    </div>
+
+                    <!-- Custom Instructions / Manual (NEW) -->
+                    <div class="mb-5">
+                        <label for="custom-instructions" class="block text-sm font-medium text-gray-700 mb-2">ຂໍ້ແນະນຳເພີ່ມເຕີມ / ຄູ່ມືການແກະສຽງ (ຖ້າມີ)</label>
+                        <textarea id="custom-instructions" rows="3" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition resize-y" placeholder="ຕົວຢ່າງ: ຖ້າມີຄຳສັບສະເພາະໃຫ້ຂຽນແບບນີ້..., ໃຫ້ເນັ້ນໜັກເລື່ອງ..."></textarea>
+                    </div>
+
+                    <!-- File Upload -->
                     <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-2">ໄຟລ໌ສຽງ (ພຽງແຕ່ເລືອກເພື່ອເອົາຊື່ໄຟລ໌ໄປໃສ່ໃນຄຳສັ່ງ)</label>
                         <div id="dropzone" class="flex items-center justify-center w-full">
@@ -102,7 +117,7 @@
                             </button>
                         </div>
 
-                        <!-- Split Audio Section (NEW) -->
+                        <!-- Split Audio Section -->
                         <div id="split-section" class="hidden mt-4 bg-indigo-50 border border-indigo-100 rounded-xl p-4">
                             <p class="text-sm text-indigo-800 mb-3 font-medium">✨ ຕ້ອງການແບ່ງໄຟລ໌ເພື່ອອັບໂຫຼດເທື່ອລະຕອນບໍ່?</p>
                             <div class="flex items-center gap-3 mb-3">
@@ -171,7 +186,7 @@
                         </h2>
                         
                         <button onclick="exportToWord()" class="flex items-center gap-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-md transition shadow-sm">
-                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4-4m4 4V4"/></svg>
                             Export .Doc
                         </button>
                     </div>
@@ -184,14 +199,71 @@
             </div>
         </div>
     </main>
+    </div>
 
     <!-- Custom Toast Notification -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
     <script>
+        // -- Login Logic --
+        function checkPassword() {
+            const password = document.getElementById('password-input').value;
+            const errorMsg = document.getElementById('login-error');
+            const overlay = document.getElementById('login-overlay');
+            const mainApp = document.getElementById('main-app');
+
+            if (password === 'admin') {
+                // Success
+                errorMsg.classList.add('hidden');
+                
+                // Animate out overlay
+                overlay.style.opacity = '0';
+                
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    // Show main app
+                    mainApp.classList.remove('hidden');
+                    mainApp.classList.add('flex');
+                    // Small delay to allow display:flex to apply before animating opacity
+                    setTimeout(() => {
+                        mainApp.classList.remove('opacity-0', 'pointer-events-none');
+                    }, 50);
+                }, 300);
+            } else {
+                // Fail
+                errorMsg.classList.remove('hidden');
+                // Shake animation for error
+                const loginBox = overlay.querySelector('div.bg-white');
+                loginBox.classList.add('animate-shake');
+                setTimeout(() => loginBox.classList.remove('animate-shake'), 500);
+            }
+        }
+
+        function handleLoginKeyPress(event) {
+            if (event.key === 'Enter') {
+                checkPassword();
+            }
+        }
+
+        // Add shake animation style dynamically
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+            .animate-shake {
+                animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            }
+        `;
+        document.head.appendChild(style);
+
+
         // App State
         let currentFile = null;
-        let audioChunks = []; // ສຳລັບເກັບໄຟລ໌ທີ່ຖືກແບ່ງ
+        let audioChunks = []; 
+        let totalAudioDuration = 0; // ເກັບຄວາມຍາວສຽງທັງໝົດເປັນວິນາທີ
         
         // UI Elements
         const fileInput = document.getElementById('audio-upload');
@@ -233,6 +305,15 @@
             }
 
             currentFile = file;
+            totalAudioDuration = 0;
+            
+            // ໂຫຼດຄວາມຍາວສຽງເພື່ອໃຊ້ຄຳນວນ Timestamp ຂອງແຕ່ລະຕອນ
+            const audioUrl = URL.createObjectURL(file);
+            const tmpAudio = new Audio(audioUrl);
+            tmpAudio.onloadedmetadata = function() {
+                totalAudioDuration = tmpAudio.duration; // ໄດ້ເປັນວິນາທີ
+                URL.revokeObjectURL(audioUrl);
+            };
             
             document.getElementById('file-name').textContent = file.name;
             const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
@@ -249,6 +330,7 @@
         function removeFile() {
             currentFile = null;
             audioChunks = [];
+            totalAudioDuration = 0;
             fileInput.value = "";
             fileInfo.classList.add('hidden');
             splitSection.classList.add('hidden');
@@ -267,21 +349,48 @@
             let start = 0;
             let partNumber = 1;
             
+            // ຄຳນວນຈຳນວນ Byte ສຳລັບ 10 ວິນາທີ (ເພື່ອໃຫ້ມີສ່ວນຊ້ອນທັບກັນ/Overlap ບໍ່ໃຫ້ຄຳເວົ້າຂາດຫາຍ)
+            let overlapSeconds = 10;
+            let overlapBytes = 0;
+            if (totalAudioDuration > 0 && currentFile.size > 0) {
+                let bytesPerSecond = currentFile.size / totalAudioDuration;
+                overlapBytes = Math.floor(bytesPerSecond * overlapSeconds);
+            } else {
+                overlapBytes = 300 * 1024; // ປະມານ 300KB ຖ້າອ່ານເວລາບໍ່ໄດ້
+            }
+            
+            // ປ້ອງກັນບໍ່ໃຫ້ Overlap ໃຫຍ່ເກີນໄປ (ສູງສຸດບໍ່ເກີນ 15% ຂອງໄຟລ໌)
+            if (overlapBytes > dynamicChunkSize * 0.15) {
+                overlapBytes = Math.floor(dynamicChunkSize * 0.15);
+            }
+            
             while (start < currentFile.size) {
                 let end = Math.min(start + dynamicChunkSize, currentFile.size);
                 let blob = currentFile.slice(start, end, currentFile.type || 'audio/mp3');
+                
+                // ຄຳນວນວ່າຕອນນີ້ເລີ່ມຕົ້ນທີ່ວິນາທີທີເທົ່າໃດຂອງໄຟລ໌ເຕັມ
+                let startTimeSeconds = 0;
+                if (totalAudioDuration > 0 && currentFile.size > 0) {
+                    startTimeSeconds = (start / currentFile.size) * totalAudioDuration;
+                }
+
                 audioChunks.push({
                     id: partNumber,
                     blob: blob,
-                    sizeMB: (blob.size / (1024 * 1024)).toFixed(2)
+                    sizeMB: (blob.size / (1024 * 1024)).toFixed(2),
+                    startTimeSeconds: startTimeSeconds
                 });
-                start = end;
+                
+                if (end >= currentFile.size) break; // ຈົບໄຟລ໌
+                
+                // ຍ້າຍຈຸດເລີ່ມຕົ້ນຂອງຄິບຕໍ່ໄປຖອຍຫຼັງ ເພື່ອໃຫ້ມີການຊ້ອນທັບ (Overlap) 10 ວິນາທີ
+                start = end - overlapBytes;
                 partNumber++;
             }
             
             renderChunksUI();
             splitSection.classList.add('hidden');
-            showToast(`ແບ່ງໄຟລ໌ສຳເລັດ! ໄດ້ທັງໝົດ ${audioChunks.length} ຕອນ (ຂະໜາດຕອນລະ ${selectedMB}MB).`, "success");
+            showToast(`ແບ່ງໄຟລ໌ສຳເລັດ! ໄດ້ທັງໝົດ ${audioChunks.length} ຕອນ (ເຊື່ອມຕໍ່ສຽງ 10 ວິນາທີ).`, "success");
         }
 
         function renderChunksUI() {
@@ -332,55 +441,110 @@
             showToast(`ດາວໂຫຼດຕອນທີ ${chunk.id} ແລ້ວ`, "success");
         }
 
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return "00:00";
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            if (h > 0) {
+                return `[${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}]`;
+            }
+            return `[${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}]`;
+        }
+
         function generateChunkPrompt(index) {
             const chunk = audioChunks[index];
-            generatePrompt(chunk.id, audioChunks.length);
+            generatePrompt(chunk.id, audioChunks.length, chunk.startTimeSeconds);
         }
 
         // -- Prompt Generation Logic --
-        function generatePrompt(chunkId = null, totalChunks = null) {
+        function generatePrompt(chunkId = null, totalChunks = null, startTimeSeconds = 0) {
             const language = document.getElementById('language-select').value;
             const mode = document.getElementById('mode-select').value;
+            const includeTimestamp = document.getElementById('timestamp-toggle').checked;
+            const customInstructions = document.getElementById('custom-instructions').value.trim();
             
             let filename = currentFile ? currentFile.name : "ໄຟລ໌ທີ່ແນບມານີ້";
             let finalPrompt = "";
+            let startTimeStr = formatTime(startTimeSeconds);
             
             let prefixContext = "";
             if (chunkId && totalChunks) {
                 if (language === 'lao') {
-                    prefixContext = `[ສຳຄັນ: ນີ້ແມ່ນໄຟລ໌ສຽງ ຕອນທີ ${chunkId} ຈາກທັງໝົດ ${totalChunks} ຕອນ ຂອງໄຟລ໌ "${filename}"]\n\n`;
+                    prefixContext = `[ສຳຄັນ: ນີ້ແມ່ນໄຟລ໌ສຽງ ຕອນທີ ${chunkId} ຈາກທັງໝົດ ${totalChunks} ຕອນ ຂອງໄຟລ໌ "${filename}"]\n`;
+                    if (chunkId > 1) {
+                        prefixContext += `[ໝາຍເຫດ: 10 ວິນາທີທຳອິດຂອງຄິບນີ້ເປັນສ່ວນທີ່ຊ້ອນທັບ (Overlap) ກັບທ້າຍຄິບທີ່ແລ້ວ ເພື່ອບໍ່ໃຫ້ຄຳເວົ້າຂາດຫາຍ. ໃຫ້ທ່ານຖອດສຽງຕໍ່ເນື່ອງຈາກເນື້ອໃນເດີມເລີຍ]\n\n`;
+                    } else {
+                        prefixContext += `\n`;
+                    }
                 } else {
-                    prefixContext = `[Important: This is audio Part ${chunkId} of ${totalChunks} from the file "${filename}"]\n\n`;
+                    prefixContext = `[Important: This is audio Part ${chunkId} of ${totalChunks} from the file "${filename}"]\n`;
+                    if (chunkId > 1) {
+                        prefixContext += `[Note: The first 10 seconds of this clip overlap with the end of the previous clip to prevent cut-off words. Please continue transcribing seamlessly.]\n\n`;
+                    } else {
+                        prefixContext += `\n`;
+                    }
                 }
             }
 
+            // --- ປັບປຸງໃໝ່: ບັງຄັບໃຫ້ແຍກ Q ແລະ R ສະເໝີ ໃນທຸກໆຮູບແບບ ---
+            let baseRulesLao = `ຄຳສັ່ງສຳຄັນທີ່ສຸດ (ຂໍ້ບັງຄັບ):\n1. ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ.\n2. ຕ້ອງແຍກຜູ້ເວົ້າຢ່າງຊັດເຈນ ໂດຍຂຶ້ນແຖວໃໝ່ທຸກຄັ້ງທີ່ປ່ຽນຄົນເວົ້າ.\n3. ຂຶ້ນໜ້າແຖວໃໝ່ ຕ້ອງໃສ່ຄຳວ່າ "Q:" ສຳລັບຜູ້ຖາມ ແລະ "R:" ສຳລັບຜູ້ຕອບ ສະເໝີ ຫ້າມເອົາຄຳເວົ້າມາລວມກັນໃນຫຍໍ້ໜ້າດຽວເດັດຂາດ.`;
+            
+            let baseRulesEng = `Strict Instructions:\n1. Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio.\n2. Clearly identify speakers by starting a new line EVERY TIME the speaker changes.\n3. Prefix the questioner's line with "Q: " and the responder's line with "R: ". Do not combine different speakers into the same paragraph.`;
+
             if (language === 'lao') {
-                if (mode === 'general') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\nຄຳສັ່ງສຳຄັນ: ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ. ໃຫ້ຖອດທຸກຄຳເວົ້າຕັ້ງແຕ່ຕົ້ນຈົນຈົບຄິບສຽງແບບຄົບຖ້ວນທຸກປະການ (Word-for-word). ຫ້າມຕັດຫຍໍ້ ແລະ ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ. ໃຫ້ພິມສະເພາະຂໍ້ຄວາມທີ່ຖອດໄດ້ອອກມາເທົ່ານັ້ນ.`;
+                if (mode === 'general' || mode === 'interview' || mode === 'interview_natural_full') {
+                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n4. ໃຫ້ຖອດທຸກຄຳເວົ້າຕັ້ງແຕ່ຕົ້ນຈົນຈົບຄິບສຽງແບບຄົບຖ້ວນທຸກປະການ (Word-for-word). ຫ້າມຕັດຫຍໍ້ ແລະ ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ.`;
+                } else if (mode === 'idi_intelligent_verbatim') {
+                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n4. **ອົງປະກອບທີ່ຕ້ອງຕັດອອກ:** ການເວົ້າກຶກໆກັກໆ, ຄຳເວົ້າທີ່ບໍ່ສົມບູນ, ປະໂຫຍກສັ້ນໆທີ່ບໍ່ຄົບຖ້ວນ, ຄຳເວົ້າເສີມ/ຄຳໂຕງໂຕ້ຍ (ເຊັ່ນ: "ເອີ", "ອາ", "ສະນັ້ນ", "ແບບວ່າ"), ສຽງທີ່ບໍ່ແມ່ນການເວົ້າ, ການເລີ່ມຕົ້ນປະໂຫຍກທີ່ຜິດພາດ (False starts), ແລະ ຄຳສັບທີ່ເວົ້າຊ້ຳໆເປັນນິດໄສທີ່ບໍ່ມີປະໂຫຍດ.\n5. **ສິ່ງທີ່ຕ້ອງຮັກສາໄວ້:** ສຽງຫົວ ແລະ ປະຄຳອຸທານທີ່ຊ່ວຍສ້າງບໍລິບົດ (ເຊັ່ນ: "ເອີ... ເຮີ້ຍ").\n6. ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ.`;
+                } else if (mode === 'general_clean_original') {
+                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n4. ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ "ຕັດສະເພາະປະໂຫຍກ ຫຼື ວະລີທີ່ເວົ້າບໍ່ຈົບ, ບໍ່ຄົບຖ້ວນ, ຫຼື ຟັງແລ້ວບໍ່ສາມາດເຂົ້າໃຈຄວາມໝາຍໄດ້" ອອກໄປ. ສຳລັບປະໂຫຍກອື່ນໆທີ່ສົມບູນ ໃຫ້ຮັກສາໄວ້ຄືເກົ່າທຸກປະການ (Word-for-word). ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ.`;
+                } else if (mode === 'general_clean_balanced') {
+                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n4. ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ "ຕັດສະເພາະປະໂຫຍກ ຫຼື ວະລີທີ່ເວົ້າບໍ່ຈົບ, ບໍ່ຄົບຖ້ວນ, ຫຼື ຟັງແລ້ວບໍ່ສາມາດເຂົ້າໃຈຄວາມໝາຍໄດ້" ອອກໄປ **ແຕ່ລະວັງຢ່າຕັດອອກຫຼາຍເກີນໄປຈົນເສຍເນື້ອໃນ**.\n5. ອະນຸຍາດໃຫ້ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລ (ເຊັ່ນ: ເອີ, ອ່າ, ແບບວ່າ) ອອກໄດ້ບາງສ່ວນເພື່ອຄວາມສະອາດ ແຕ່ **ບໍ່ໃຫ້ຕັດອອກທັງໝົດ** ເພື່ອຮັກສາຄວາມເປັນທຳມະຊາດໄວ້. ສຳລັບປະໂຫຍກອື່ນໆທີ່ສົມບູນ ໃຫ້ຮັກສາໄວ້ຄືເກົ່າທຸກປະການ (Word-for-word). ຫ້າມສະຫຼຸບຄວາມ.`;
                 } else if (mode === 'nofiller') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\nຄຳສັ່ງສຳຄັນ: ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ. ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກ (ເຊັ່ນ: ເອີ, ອ່າ, ແບບວ່າ, ກະຄືວ່າ, ອັນນັ້ນ) ເພື່ອໃຫ້ອ່ານງ່າຍຂຶ້ນ ໂດຍຮັກສາເນື້ອໃນສຳຄັນໄວ້ໃຫ້ຄົບຖ້ວນທຸກປະການ. ຫ້າມສະຫຼຸບຄວາມ. ໃຫ້ພິມສະເພາະຂໍ້ຄວາມທີ່ຖອດໄດ້ອອກມາເທົ່ານັ້ນ.`;
-                } else if (mode === 'interview') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\nຄຳສັ່ງສຳຄັນທີ່ສຸດ (ຂໍ້ບັງຄັບ):\n1. ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ.\n2. ນີ້ແມ່ນບົດສົນທະນາ ຫຼື ການສຳພາດ. ໃຫ້ຟັງ ແລະ ແຍກຜູ້ເວົ້າຢ່າງຊັດເຈນ.\n3. ທຸກໆຄັ້ງທີ່ມີການປ່ຽນຄົນເວົ້າ ໃຫ້ "ຂຶ້ນແຖວໃໝ່" ສະເໝີ.\n4. ຂຶ້ນໜ້າແຖວໃໝ່ ຕ້ອງໃສ່ຄຳວ່າ "Q:" ສຳລັບຄົນທີ່ຕັ້ງຄຳຖາມ.\n5. ຂຶ້ນໜ້າແຖວໃໝ່ ຕ້ອງໃສ່ຄຳວ່າ "R:" ສຳລັບຄົນທີ່ຕອບ.\n6. ຫ້າມເອົາຄຳເວົ້າຂອງ Q ແລະ R ມາລວມກັນໃນຫຍໍ້ໜ້າດຽວເດັດຂາດ.`;
-                } else if (mode === 'summary_natural') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\nຄຳສັ່ງສຳຄັນ: ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ. ໃຫ້ຖອດສຽງແລ້ວສັງລວມເນື້ອໃນໃຫ້ເຂົ້າໃຈງ່າຍຂຶ້ນ ແຕ່ **ຫ້າມຄັດຫຍໍ້ຈົນສັ້ນເກີນໄປ**. ໃຫ້ຮັກສາຄວາມໝາຍເດີມ ແລະ ຄວາມເປັນທຳມະຊາດຂອງການເວົ້າໄວ້ໃຫ້ຄົບຖ້ວນ. ພ້ອມທັງຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກ (ເຊັ່ນ: ເອີ, ອ່າ, ແບບວ່າ, ກະຄືວ່າ). ໃຫ້ພິມສະເພາະຂໍ້ຄວາມທີ່ປັບປຸງແລ້ວອອກມາເທົ່ານັ້ນ.`;
-                } else if (mode === 'summary_interview') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\nຄຳສັ່ງສຳຄັນທີ່ສຸດ (ຂໍ້ບັງຄັບ):\n1. ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ.\n2. ນີ້ແມ່ນບົດສົນທະນາ ຫຼື ການສຳພາດ. ໃຫ້ຟັງ ແລະ ແຍກຜູ້ເວົ້າຢ່າງຊັດເຈນ ໂດຍຂຶ້ນແຖວໃໝ່ທຸກຄັ້ງທີ່ປ່ຽນຄົນເວົ້າ.\n3. ຂຶ້ນໜ້າແຖວໃໝ່ ຕ້ອງໃສ່ຄຳວ່າ "Q:" ສຳລັບຄົນທີ່ຕັ້ງຄຳຖາມ ແລະ "R:" ສຳລັບຄົນທີ່ຕອບ ສະເໝີ.\n4. ໃຫ້ຖອດສຽງແບບສັງລວມເນື້ອໃນໃຫ້ເຂົ້າໃຈງ່າຍຂຶ້ນ ແຕ່ **ຫ້າມຄັດຫຍໍ້ຈົນສັ້ນເກີນໄປ**. ໃຫ້ຮັກສາຄວາມໝາຍເດີມ ແລະ ຄວາມເປັນທຳມະຊາດຂອງການສົນທະນາໄວ້.\n5. ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກທັງໝົດ (ເຊັ່ນ: ເອີ, ອ່າ, ແບບວ່າ, ກະຄືວ່າ).`;
-                } else if (mode === 'interview_natural_full') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\nຄຳສັ່ງສຳຄັນທີ່ສຸດ (ຂໍ້ບັງຄັບ):\n1. ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ.\n2. ນີ້ແມ່ນບົດສົນທະນາ ຫຼື ການສຳພາດ. ໃຫ້ຟັງ ແລະ ແຍກຜູ້ເວົ້າຢ່າງຊັດເຈນ ໂດຍຂຶ້ນແຖວໃໝ່ທຸກຄັ້ງທີ່ປ່ຽນຄົນເວົ້າ.\n3. ຂຶ້ນໜ້າແຖວໃໝ່ ຕ້ອງໃສ່ຄຳວ່າ "Q:" ສຳລັບຄົນທີ່ຕັ້ງຄຳຖາມ ແລະ "R:" ສຳລັບຄົນທີ່ຕອບ ສະເໝີ.\n4. ໃຫ້ຖອດທຸກຄຳເວົ້າແບບຄົບຖ້ວນ ແຕ່ຮັກສາຄວາມເປັນທຳມະຊາດຂອງການສົນທະນາໄວ້ ຫ້າມຕັດຫຍໍ້ ຫຼື ສະຫຼຸບຄວາມເດັດຂາດ.\n5. ຫ້າມເອົາຄຳເວົ້າຂອງ Q ແລະ R ມາລວມກັນໃນຫຍໍ້ໜ້າດຽວເດັດຂາດ.\n6. ໃຫ້ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກ (ເຊັ່ນ: ເອີ, ອ່າ, ແບບວ່າ, ກະຄືວ່າ) ເພື່ອໃຫ້ອ່ານງ່າຍຂຶ້ນ.`;
+                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n4. ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກທັງໝົດ (ເຊັ່ນ: ເອີ, ອ່າ, ແບບວ່າ, ກະຄືວ່າ, ອັນນັ້ນ) ເພື່ອໃຫ້ອ່ານງ່າຍຂຶ້ນ ໂດຍຮັກສາເນື້ອໃນສຳຄັນໄວ້ໃຫ້ຄົບຖ້ວນທຸກປະການ. ຫ້າມສະຫຼຸບຄວາມ.`;
+                } else if (mode === 'summary_natural' || mode === 'summary_interview') {
+                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n4. ໃຫ້ຖອດສຽງແລ້ວສັງລວມເນື້ອໃນໃຫ້ເຂົ້າໃຈງ່າຍຂຶ້ນ ແຕ່ **ຫ້າມຄັດຫຍໍ້ຈົນສັ້ນເກີນໄປ**. ໃຫ້ຮັກສາຄວາມໝາຍເດີມ ແລະ ຄວາມເປັນທຳມະຊາດຂອງການສົນທະນາໄວ້ໃຫ້ຄົບຖ້ວນ.\n5. ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກທັງໝົດ.`;
                 }
             } else { // English
-                if (mode === 'general') {
-                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\nStrict Instruction: Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio. You must transcribe every single word from the very beginning to the end of the clip (Word-for-word). DO NOT summarize, DO NOT skip any parts, and DO NOT shorten the text. Output ONLY the transcribed text.`;
+                if (mode === 'general' || mode === 'interview' || mode === 'interview_natural_full') {
+                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n4. Transcribe completely and verbatim (Word-for-word). DO NOT summarize, DO NOT skip any parts, and DO NOT shorten the text.`;
+                } else if (mode === 'idi_intelligent_verbatim') {
+                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n4. **Elements to REMOVE:** Stutters, incomplete words, short incomplete sentences, filler words (e.g., "uh", "um", "so", "like"), non-speech sounds (e.g., coughs, throat clearing), false starts, and habitually repeated words that do not add value to the content.\n5. **Elements to KEEP:** Laughter (as it shows the overall emotion and banter) and meaningful interjections (e.g., "uh-huh", "oh", "hey") that help build context.\n6. DO NOT summarize the text.`;
+                } else if (mode === 'general_clean_original') {
+                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n4. Transcribe from start to finish, but specifically REMOVE any incomplete sentences, cut-off phrases, or segments that are completely incomprehensible. Keep all other complete and meaningful content exactly as spoken (Word-for-word). DO NOT summarize.`;
+                } else if (mode === 'general_clean_balanced') {
+                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n4. Transcribe from start to finish, but specifically REMOVE any incomplete sentences, cut-off phrases, or segments that are completely incomprehensible, **but be very careful not to remove too much content**.\n5. You may remove SOME filler words (e.g., um, ah, er) to clean up the text, but **DO NOT remove all of them** in order to maintain a natural flow. Keep all other complete and meaningful content exactly as spoken (Word-for-word). DO NOT summarize.`;
                 } else if (mode === 'nofiller') {
-                    finalPrompt = `${prefixContext}Please transcribe the attached audio file named "${filename}" into English.\n\nInstruction: Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio. Provide a full transcription from start to finish, but please REMOVE filler words, stutters, and hesitation marks (e.g., um, ah, er, like, you know). Keep the core message and flow completely intact. Output ONLY the transcribed text.`;
-                } else if (mode === 'interview') {
-                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\nStrict Instructions:\n1. Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio.\n2. This is an interview or dialogue. Please clearly identify and separate the speakers.\n3. Start a new line EVERY TIME the speaker changes.\n4. Prefix the questioner's line with "Q: ".\n5. Prefix the responder's line with "R: ".`;
-                } else if (mode === 'summary_natural') {
-                    finalPrompt = `${prefixContext}Please transcribe the attached audio file named "${filename}" into English.\n\nInstruction: Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio. Then thoughtfully summarize the content for clarity, but **DO NOT over-abbreviate**. Maintain the original meaning and natural conversational flow. Also, remove all filler words, stutters, and hesitation marks (e.g., um, ah, er, like, you know). Output ONLY the refined transcribed text.`;
-                } else if (mode === 'summary_interview') {
-                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\nStrict Instructions:\n1. Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio.\n2. This is an interview/dialogue. Clearly identify speakers by starting a new line EVERY TIME the speaker changes.\n3. Prefix the questioner's line with "Q: " and the responder's line with "R: ".\n4. Thoughtfully summarize the content for clarity, but **DO NOT over-abbreviate**. Maintain the original meaning and natural conversational flow.\n5. Remove all filler words, stutters, and hesitation marks (e.g., um, ah, er, like, you know).`;
-                } else if (mode === 'interview_natural_full') {
-                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\nStrict Instructions:\n1. Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio.\n2. This is an interview/dialogue. Clearly identify speakers by starting a new line EVERY TIME the speaker changes.\n3. Prefix the questioner's line with "Q: " and the responder's line with "R: ".\n4. Transcribe completely while maintaining the natural conversational flow. DO NOT summarize or shorten the text.\n5. Do not combine different speakers into the same paragraph.\n6. Remove all filler words, stutters, and hesitation marks (e.g., um, ah, er, like, you know).`;
+                    finalPrompt = `${prefixContext}Please transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n4. Provide a full transcription from start to finish, but please REMOVE filler words, stutters, and hesitation marks (e.g., um, ah, er, like, you know). Keep the core message and flow completely intact. DO NOT summarize.`;
+                } else if (mode === 'summary_natural' || mode === 'summary_interview') {
+                    finalPrompt = `${prefixContext}Please transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n4. Thoughtfully summarize the content for clarity, but **DO NOT over-abbreviate**. Maintain the original meaning and natural conversational flow.\n5. Remove all filler words, stutters, and hesitation marks.`;
+                }
+            }
+
+            if (includeTimestamp) {
+                if (language === 'lao') {
+                    finalPrompt += `\n\n[ຄຳສັ່ງເພີ່ມເຕີມ]: ກະລຸນາໃສ່ເວລາ (Timestamp) ໄວ້ທາງໜ້າຂອງທຸກໆແຖວ, ທຸກໆຫຍໍ້ໜ້າ, ຫຼື ທຸກໆຄັ້ງທີ່ມີການປ່ຽນຄົນເວົ້າ.`;
+                    if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
+                        finalPrompt += `\n**ສຳຄັນຫຼາຍ**: ເນື່ອງຈາກນີ້ແມ່ນຄິບສຽງສ່ວນຕໍ່ເນື່ອງ ໃຫ້ກຳນົດວ່າ "ວິນາທີທີ 0" ຂອງຄິບສຽງທີ່ອັບໂຫຼດນີ້ ຄືເວລາ ${startTimeStr} ຂອງຄິບເຕັມ. ດັ່ງນັ້ນ ໃຫ້ເລີ່ມຕົ້ນຂຽນເວລາ (Timestamp) ຈາກ ${startTimeStr} ເປັນຕົ້ນໄປ (ຫ້າມເລີ່ມຈາກ 00:00 ເດັດຂາດ).`;
+                    } else {
+                        finalPrompt += ` (ເຊັ່ນ: [00:00])`;
+                    }
+                } else {
+                    finalPrompt += `\n\n[Additional Instruction]: Please include a timestamp at the beginning of every line, paragraph, or every time the speaker changes.`;
+                    if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
+                        finalPrompt += `\n**CRITICAL**: Since this is a continuation audio part, you MUST treat the 0-second mark of this specific audio file as ${startTimeStr} in the full interview context. Start all timestamps from ${startTimeStr} onwards (DO NOT start from 00:00).`;
+                    } else {
+                        finalPrompt += ` (e.g., [00:00])`;
+                    }
+                }
+            }
+
+            if (customInstructions) {
+                if (language === 'lao') {
+                    finalPrompt += `\n\n[ຄູ່ມື / ຂໍ້ແນະນຳເພີ່ມເຕີມສຳລັບການແກະສຽງ]:\n${customInstructions}`;
+                } else {
+                    finalPrompt += `\n\n[Additional Transcription Guidelines / Manual]:\n${customInstructions}`;
                 }
             }
 
