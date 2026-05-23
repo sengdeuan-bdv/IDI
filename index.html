@@ -107,9 +107,9 @@
                     </div>
 
                     <!-- Timestamp Toggle -->
-                    <div class="mb-5 flex items-center gap-2">
-                        <input type="checkbox" id="timestamp-toggle" checked class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer transition">
-                        <label for="timestamp-toggle" class="text-sm font-medium text-gray-700 cursor-pointer">ບັງຄັບໃສ່ເວລາ (Timestamps) ໄວ້ໜ້າແຖວສະເໝີ</label>
+                    <div class="mb-5 flex items-center gap-2 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                        <input type="checkbox" id="timestamp-toggle" checked class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 cursor-pointer transition">
+                        <label for="timestamp-toggle" class="text-sm font-semibold text-blue-800 cursor-pointer">ບັງຄັບໃສ່ເວລາ (Timestamps) ແລະ ຫຍັບແຖວສະເໝີ</label>
                     </div>
 
                     <!-- Custom Instructions / Manual -->
@@ -491,97 +491,103 @@
             let finalPrompt = "";
             let startTimeStr = formatTime(startTimeSeconds);
             
+            // 1. Context Information
             let prefixContext = "";
             if (chunkId && totalChunks) {
                 if (language === 'lao') {
-                    prefixContext = `[ສຳຄັນ: ນີ້ແມ່ນໄຟລ໌ສຽງ ຕອນທີ ${chunkId} ຈາກທັງໝົດ ${totalChunks} ຕອນ ຂອງໄຟລ໌ "${filename}"]\n`;
+                    prefixContext = `[ຂໍ້ມູນ: ນີ້ແມ່ນໄຟລ໌ສຽງ ຕອນທີ ${chunkId} ຈາກທັງໝົດ ${totalChunks} ຕອນ ຂອງໄຟລ໌ "${filename}"]\n`;
                     if (chunkId > 1) {
-                        prefixContext += `[ໝາຍເຫດ: 10 ວິນາທີທຳອິດຂອງຄິບນີ້ເປັນສ່ວນທີ່ຊ້ອນທັບ (Overlap) ກັບທ້າຍຄິບທີ່ແລ້ວ ເພື່ອບໍ່ໃຫ້ຄຳເວົ້າຂາດຫາຍ. ໃຫ້ທ່ານຖອດສຽງຕໍ່ເນື່ອງຈາກເນື້ອໃນເດີມເລີຍ]\n\n`;
+                        prefixContext += `*ໝາຍເຫດ: 10 ວິນາທີທຳອິດເປັນການຊ້ອນທັບກັບຄິບກ່ອນໜ້າ ໃຫ້ຖອດສຽງຕໍ່ເນື່ອງກັນເລີຍ*\n\n`;
                     } else {
                         prefixContext += `\n`;
                     }
                 } else {
-                    prefixContext = `[Important: This is audio Part ${chunkId} of ${totalChunks} from the file "${filename}"]\n`;
+                    prefixContext = `[File Info: This is audio Part ${chunkId} of ${totalChunks} from the file "${filename}"]\n`;
                     if (chunkId > 1) {
-                        prefixContext += `[Note: The first 10 seconds of this clip overlap with the end of the previous clip to prevent cut-off words. Please continue transcribing seamlessly.]\n\n`;
+                        prefixContext += `*Note: The first 10 seconds overlap with the previous clip. Continue transcribing seamlessly.*\n\n`;
                     } else {
                         prefixContext += `\n`;
                     }
                 }
             }
 
-            // 1. ສ້າງກົດເລື່ອງເວລາ (Timestamp Rules) ຖ້າຖືກຕິກເລືອກ
-            let timeStampRuleLao = "";
-            let timeStampRuleEng = "";
-            let exampleFormatLao = "";
-            let exampleFormatEng = "";
+            // 2. MANDATORY TEMPLATE (Put at the top to force AI to format first)
+            let templateBlockLao = "";
+            let templateBlockEng = "";
 
             if (includeTimestamp) {
-                if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
-                    timeStampRuleLao = `\n4. **[ບັງຄັບເດັດຂາດ]**: ຕ້ອງໃສ່ເວລາ (Timestamp) ໄວ້ໜ້າທຸກໆແຖວ ຫຼື ທຸກຄັ້ງທີ່ປ່ຽນຄົນເວົ້າສະເໝີ! ເນື່ອງຈາກນີ້ເປັນຄິບຕໍ່ເນື່ອງ, ໃຫ້ເລີ່ມນັບເວລາຈາກ ${startTimeStr} ເປັນຕົ້ນໄປ (ຫ້າມເລີ່ມຈາກ 00:00).`;
-                    timeStampRuleEng = `\n4. **[CRITICAL]**: You MUST include a timestamp at the beginning of EVERY line! As this is a continuation, start timestamps from ${startTimeStr} onwards (DO NOT start at 00:00).`;
-                    
-                    exampleFormatLao = `\n\n**ຕົວຢ່າງຮູບແບບການຕອບທີ່ຕ້ອງການ:**\n${startTimeStr} Q: ສະບາຍດີມື້ນີ້ເປັນແນວໃດ?\n[${formatTime(startTimeSeconds + 5)}] R: ສະບາຍດີ ຂ້ອຍສະບາຍດີ...`;
-                    exampleFormatEng = `\n\n**Expected Output Format:**\n${startTimeStr} Q: Hello, how are you?\n[${formatTime(startTimeSeconds + 5)}] R: I am doing well...`;
-                } else {
-                    timeStampRuleLao = `\n4. **[ບັງຄັບເດັດຂາດ]**: ຕ້ອງໃສ່ເວລາ (Timestamp) ເຊັ່ນ [00:00] ໄວ້ໜ້າທຸກໆແຖວ ຫຼື ທຸກຄັ້ງທີ່ປ່ຽນຄົນເວົ້າສະເໝີ!`;
-                    timeStampRuleEng = `\n4. **[CRITICAL]**: You MUST include a timestamp (e.g., [00:00]) at the beginning of EVERY line!`;
-                    
-                    exampleFormatLao = `\n\n**ຕົວຢ່າງຮູບແບບການຕອບທີ່ຕ້ອງການ:**\n[00:00] Q: ສະບາຍດີມື້ນີ້ເປັນແນວໃດ?\n[00:05] R: ສະບາຍດີ ຂ້ອຍສະບາຍດີ...`;
-                    exampleFormatEng = `\n\n**Expected Output Format:**\n[00:00] Q: Hello, how are you?\n[00:05] R: I am doing well...`;
-                }
+                let startT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? startTimeStr : "[00:00]";
+                let nextT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? `[${formatTime(startTimeSeconds + 5)}]` : "[00:05]";
+                
+                templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ! ຫ້າມລືມໃສ່ເວລາ (Timestamp) ເດັດຂາດ. **ຖ້າອ່ານເວລາແທ້ໆຈາກໄຟລ໌ບໍ່ໄດ້, ເຈົ້າຕ້ອງ "ປະເມີນ (Estimate)" ຫຼື ກະຕວງເວລາຂຶ້ນມາຕາມຄວາມຍາວຂອງສຽງ! ຫ້າມບໍ່ໃສ່ເວລາເດັດຂາດ.**\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${startT} Q:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n${nextT} R:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\`\`\`\n\n`;
+                
+                templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below! Do not forget the Timestamps. **If you cannot read exact metadata, you MUST estimate the timestamps based on audio length! Never omit timestamps.**\n\n**MANDATORY FORMAT:**\n\`\`\`text\n${startT} Q:\n    (Type question here, indented by 1 Tab)\n${nextT} R:\n    (Type response here, indented by 1 Tab)\n\`\`\`\n\n`;
+            } else {
+                templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ!\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\nQ:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\nR:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\`\`\`\n\n`;
+                
+                templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below!\n\n**MANDATORY FORMAT:**\n\`\`\`text\nQ:\n    (Type question here, indented by 1 Tab)\nR:\n    (Type response here, indented by 1 Tab)\n\`\`\`\n\n`;
             }
 
-            // 2. ສ້າງກົດພື້ນຖານທີ່ບັງຄັບໃຊ້ກັບທຸກໆໂໝດ
-            let baseRulesLao = `ຄຳສັ່ງສຳຄັນທີ່ສຸດ (ຂໍ້ບັງຄັບ):\n1. ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ.\n2. ຕ້ອງແຍກຜູ້ເວົ້າຢ່າງຊັດເຈນ ໂດຍຂຶ້ນແຖວໃໝ່ທຸກຄັ້ງທີ່ປ່ຽນຄົນເວົ້າ.\n3. ຂຶ້ນໜ້າແຖວໃໝ່ ຕ້ອງໃສ່ຄຳວ່າ "Q:" ສຳລັບຜູ້ຖາມ ແລະ "R:" ສຳລັບຜູ້ຕອບ ສະເໝີ ຫ້າມເອົາຄຳເວົ້າມາລວມກັນໃນຫຍໍ້ໜ້າດຽວເດັດຂາດ.${timeStampRuleLao}`;
-            
-            let baseRulesEng = `Strict Instructions:\n1. Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio.\n2. Clearly identify speakers by starting a new line EVERY TIME the speaker changes.\n3. Prefix the questioner's line with "Q: " and the responder's line with "R: ". Do not combine different speakers into the same paragraph.${timeStampRuleEng}`;
+            // 3. Core Transcription Rules
+            let ruleLao = `**ກົດລະບຽບການແກະສຽງ:**\n1. ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ.\n2. ຕ້ອງແຍກຜູ້ເວົ້າຢ່າງຊັດເຈນ.\n`;
+            let ruleEng = `**Transcription Rules:**\n1. Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio.\n2. Clearly identify speakers.\n`;
 
-            // 3. ເພີ່ມກົດສະເພາະຂອງແຕ່ລະໂໝດ (ໃຊ້ເຄື່ອງໝາຍ - ແທນຕົວເລກ ເພື່ອບໍ່ໃຫ້ຊ້ຳກັບຂໍ້ 1-4 ຂ້າງເທິງ)
             if (language === 'lao') {
                 if (mode === 'general' || mode === 'interview' || mode === 'interview_natural_full') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n- ໃຫ້ຖອດທຸກຄຳເວົ້າຕັ້ງແຕ່ຕົ້ນຈົນຈົບຄິບສຽງແບບຄົບຖ້ວນທຸກປະການ (Word-for-word). ຫ້າມຕັດຫຍໍ້ ແລະ ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ.`;
+                    ruleLao += `3. ໃຫ້ຖອດທຸກຄຳເວົ້າຕັ້ງແຕ່ຕົ້ນຈົນຈົບຄິບສຽງແບບຄົບຖ້ວນທຸກປະການ (Word-for-word). ຫ້າມຕັດຫຍໍ້ ແລະ ຫ້າມສະຫຼຸບຄວາມ.`;
                 } else if (mode === 'idi_intelligent_verbatim') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n- **ອົງປະກອບທີ່ຕ້ອງຕັດອອກ:** ການເວົ້າກຶກໆກັກໆ, ຄຳເວົ້າທີ່ບໍ່ສົມບູນ, ປະໂຫຍກສັ້ນໆທີ່ບໍ່ຄົບຖ້ວນ, ຄຳເວົ້າເສີມ/ຄຳໂຕງໂຕ້ຍ (ເຊັ່ນ: "ເອີ", "ອາ", "ສະນັ້ນ", "ແບບວ່າ"), ສຽງທີ່ບໍ່ແມ່ນການເວົ້າ, ການເລີ່ມຕົ້ນປະໂຫຍກທີ່ຜິດພາດ (False starts), ແລະ ຄຳສັບທີ່ເວົ້າຊ້ຳໆເປັນນິດໄສທີ່ບໍ່ມີປະໂຫຍດ.\n- **ສິ່ງທີ່ຕ້ອງຮັກສາໄວ້:** ສຽງຫົວ ແລະ ປະຄຳອຸທານທີ່ຊ່ວຍສ້າງບໍລິບົດ (ເຊັ່ນ: "ເອີ... ເຮີ້ຍ").\n- ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ.`;
+                    ruleLao += `3. **ສິ່ງທີ່ຕ້ອງຕັດອອກ:** ຕັດການເວົ້າກຶກໆກັກໆ, ປະໂຫຍກທີ່ເວົ້າບໍ່ຈົບ, ຄຳເວົ້າເສີມ/ຄຳໂຕງໂຕ້ຍ (ເຊັ່ນ: "ເອີ", "ອາ", "ສະນັ້ນ"), ການໄອ, ປະໂຫຍກທີ່ເລີ່ມຕົ້ນຜິດ (False starts).\n4. **ສິ່ງທີ່ຕ້ອງຮັກສາໄວ້:** ສຽງຫົວ ແລະ ປະຄຳອຸທານທີ່ຊ່ວຍສ້າງບໍລິບົດ (ເຊັ່ນ: "ເອີ... ເຮີ້ຍ"). ຫ້າມສະຫຼຸບຄວາມ.`;
                 } else if (mode === 'general_clean_original') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n- ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ "ຕັດສະເພາະປະໂຫຍກ ຫຼື ວະລີທີ່ເວົ້າບໍ່ຈົບ, ບໍ່ຄົບຖ້ວນ, ຫຼື ຟັງແລ້ວບໍ່ສາມາດເຂົ້າໃຈຄວາມໝາຍໄດ້" ອອກໄປ. ສຳລັບປະໂຫຍກອື່ນໆທີ່ສົມບູນ ໃຫ້ຮັກສາໄວ້ຄືເກົ່າທຸກປະການ (Word-for-word). ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ.`;
+                    ruleLao += `3. ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ "ຕັດສະເພາະປະໂຫຍກ/ວະລີທີ່ເວົ້າບໍ່ຈົບ ຫຼື ຟັງບໍ່ຮູ້ເລື່ອງ" ອອກໄປ. ສຳລັບປະໂຫຍກອື່ນໆ ໃຫ້ຮັກສາໄວ້ຄືເກົ່າ (Word-for-word).`;
                 } else if (mode === 'general_clean_balanced') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n- ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ "ຕັດສະເພາະປະໂຫຍກ ຫຼື ວະລີທີ່ເວົ້າບໍ່ຈົບ, ບໍ່ຄົບຖ້ວນ, ຫຼື ຟັງແລ້ວບໍ່ສາມາດເຂົ້າໃຈຄວາມໝາຍໄດ້" ອອກໄປ **ແຕ່ລະວັງຢ່າຕັດອອກຫຼາຍເກີນໄປຈົນເສຍເນື້ອໃນ**.\n- ອະນຸຍາດໃຫ້ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລ (ເຊັ່ນ: ເອີ, ອ່າ, ແບບວ່າ) ອອກໄດ້ບາງສ່ວນເພື່ອຄວາມສະອາດ ແຕ່ **ບໍ່ໃຫ້ຕັດອອກທັງໝົດ** ເພື່ອຮັກສາຄວາມເປັນທຳມະຊາດໄວ້. ສຳລັບປະໂຫຍກອື່ນໆທີ່ສົມບູນ ໃຫ້ຮັກສາໄວ້ຄືເກົ່າທຸກປະການ (Word-for-word). ຫ້າມສະຫຼຸບຄວາມ.`;
+                    ruleLao += `3. "ຕັດສະເພາະປະໂຫຍກ/ວະລີທີ່ເວົ້າບໍ່ຈົບ ຫຼື ຟັງບໍ່ຮູ້ເລື່ອງ" ອອກໄປ ແຕ່ລະວັງຢ່າຕັດຫຼາຍເກີນໄປ.\n4. ອະນຸຍາດໃຫ້ຕັດຄຳໂຕງໂຕ້ຍ (ເຊັ່ນ: ເອີ, ອ່າ) ອອກໄດ້ບາງສ່ວນເພື່ອຄວາມສະອາດ ແຕ່ຫ້າມຕັດອອກທັງໝົດ ເພື່ອຮັກສາຄວາມເປັນທຳມະຊາດໄວ້.`;
                 } else if (mode === 'nofiller') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n- ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກທັງໝົດ (ເຊັ່ນ: ເອີ, ອ່າ, ແບບວ່າ, ກະຄືວ່າ, ອັນນັ້ນ) ເພື່ອໃຫ້ອ່ານງ່າຍຂຶ້ນ ໂດຍຮັກສາເນື້ອໃນສຳຄັນໄວ້ໃຫ້ຄົບຖ້ວນທຸກປະການ. ຫ້າມສະຫຼຸບຄວາມ.`;
+                    ruleLao += `3. ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກທັງໝົດ ເພື່ອໃຫ້ອ່ານງ່າຍຂຶ້ນ ໂດຍຮັກສາເນື້ອໃນສຳຄັນໄວ້ໃຫ້ຄົບຖ້ວນ.`;
                 } else if (mode === 'summary_natural' || mode === 'summary_interview') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n- ໃຫ້ຖອດສຽງແລ້ວສັງລວມເນື້ອໃນໃຫ້ເຂົ້າໃຈງ່າຍຂຶ້ນ ແຕ່ **ຫ້າມຄັດຫຍໍ້ຈົນສັ້ນເກີນໄປ**. ໃຫ້ຮັກສາຄວາມໝາຍເດີມ ແລະ ຄວາມເປັນທຳມະຊາດຂອງການສົນທະນາໄວ້ໃຫ້ຄົບຖ້ວນ.\n- ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກທັງໝົດ.`;
+                    ruleLao += `3. ໃຫ້ຖອດສຽງແລ້ວສັງລວມເນື້ອໃນໃຫ້ເຂົ້າໃຈງ່າຍຂຶ້ນ ແຕ່ຫ້າມຄັດຫຍໍ້ຈົນສັ້ນເກີນໄປ. ໃຫ້ຮັກສາຄວາມໝາຍເດີມໄວ້.\n4. ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກທັງໝົດ.`;
                 }
             } else { // English
                 if (mode === 'general' || mode === 'interview' || mode === 'interview_natural_full') {
-                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n- Transcribe completely and verbatim (Word-for-word). DO NOT summarize, DO NOT skip any parts, and DO NOT shorten the text.`;
+                    ruleEng += `3. Transcribe completely and verbatim (Word-for-word). DO NOT summarize, DO NOT skip any parts.`;
                 } else if (mode === 'idi_intelligent_verbatim') {
-                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n- **Elements to REMOVE:** Stutters, incomplete words, short incomplete sentences, filler words (e.g., "uh", "um", "so", "like"), non-speech sounds (e.g., coughs, throat clearing), false starts, and habitually repeated words that do not add value to the content.\n- **Elements to KEEP:** Laughter (as it shows the overall emotion and banter) and meaningful interjections (e.g., "uh-huh", "oh", "hey") that help build context.\n- DO NOT summarize the text.`;
+                    ruleEng += `3. **REMOVE:** Stutters, incomplete words, filler words, non-speech sounds, false starts.\n4. **KEEP:** Laughter and meaningful interjections (e.g., "uh-huh"). DO NOT summarize.`;
                 } else if (mode === 'general_clean_original') {
-                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n- Transcribe from start to finish, but specifically REMOVE any incomplete sentences, cut-off phrases, or segments that are completely incomprehensible. Keep all other complete and meaningful content exactly as spoken (Word-for-word). DO NOT summarize.`;
+                    ruleEng += `3. Transcribe from start to finish, but specifically REMOVE any incomplete sentences or incomprehensible segments. Keep all other content verbatim.`;
                 } else if (mode === 'general_clean_balanced') {
-                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n- Transcribe from start to finish, but specifically REMOVE any incomplete sentences, cut-off phrases, or segments that are completely incomprehensible, **but be very careful not to remove too much content**.\n- You may remove SOME filler words (e.g., um, ah, er) to clean up the text, but **DO NOT remove all of them** in order to maintain a natural flow. Keep all other complete and meaningful content exactly as spoken (Word-for-word). DO NOT summarize.`;
+                    ruleEng += `3. REMOVE incomplete sentences or incomprehensible segments (careful not to remove too much).\n4. Remove SOME filler words to clean up the text, but DO NOT remove all of them.`;
                 } else if (mode === 'nofiller') {
-                    finalPrompt = `${prefixContext}Please transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n- Provide a full transcription from start to finish, but please REMOVE filler words, stutters, and hesitation marks (e.g., um, ah, er, like, you know). Keep the core message and flow completely intact. DO NOT summarize.`;
+                    ruleEng += `3. Provide a full transcription but REMOVE all filler words, stutters, and hesitation marks.`;
                 } else if (mode === 'summary_natural' || mode === 'summary_interview') {
-                    finalPrompt = `${prefixContext}Please transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n- Thoughtfully summarize the content for clarity, but **DO NOT over-abbreviate**. Maintain the original meaning and natural conversational flow.\n- Remove all filler words, stutters, and hesitation marks.`;
+                    ruleEng += `3. Thoughtfully summarize the content for clarity, but DO NOT over-abbreviate.\n4. Remove all filler words, stutters, and hesitation marks.`;
                 }
             }
 
-            // 4. ເພີ່ມຄຳສັ່ງ Custom ແລະ ຕົວຢ່າງຮູບແບບໄວ້ລຸ່ມສຸດ
-            if (customInstructions) {
-                if (language === 'lao') {
-                    finalPrompt += `\n\n[ຄູ່ມື / ຂໍ້ແນະນຳເພີ່ມເຕີມສຳລັບການແກະສຽງ]:\n${customInstructions}`;
-                } else {
-                    finalPrompt += `\n\n[Additional Transcription Guidelines / Manual]:\n${customInstructions}`;
-                }
-            }
-
+            // 4. ເພີ່ມກົດບັງຄັບເລື່ອງເວລາ (Timestamps Fallback)
             if (includeTimestamp) {
                 if (language === 'lao') {
-                    finalPrompt += exampleFormatLao;
+                    ruleLao += `\n**[ກົດເຫຼັກເລື່ອງເວລາ 100%]**: ຕ້ອງໃສ່ເວລາ (Timestamp) ເຊັ່ນ [00:00], [00:15] ໄວ້ໜ້າຊື່ຜູ້ເວົ້າ "ທຸກໆຄັ້ງ". **ຖ້າລະບົບບໍ່ເຫັນເວລາ ໃຫ້ປະເມີນ (Estimate) ເວລາຂຶ້ນມາເອງ!**`;
+                    if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
+                        ruleLao += ` ເນື່ອງຈາກນີ້ເປັນຄິບຕໍ່ເນື່ອງ, ໃຫ້ເລີ່ມນັບເວລາຈາກ ${startTimeStr} ຂຶ້ນໄປ (ຫ້າມເລີ່ມຈາກ 00:00).`;
+                    }
                 } else {
-                    finalPrompt += exampleFormatEng;
+                    ruleEng += `\n**[100% STRICT TIMESTAMP RULE]**: You MUST insert a Timestamp (e.g., [00:00], [00:15]) before EVERY speaker change! **If you cannot read the exact timing, you MUST ESTIMATE the timestamps. Never output without timestamps.**`;
+                    if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
+                        ruleEng += ` This is a continuation clip. Start all timestamps from ${startTimeStr} onwards (DO NOT start from 00:00).`;
+                    }
+                }
+            }
+
+            // Assemble final prompt
+            finalPrompt = prefixContext;
+            if (language === 'lao') {
+                finalPrompt += templateBlockLao + ruleLao;
+                if (customInstructions) {
+                    finalPrompt += `\n\n**[ຄູ່ມື / ຂໍ້ແນະນຳເພີ່ມເຕີມ]:**\n${customInstructions}`;
+                }
+            } else {
+                finalPrompt += templateBlockEng + ruleEng;
+                if (customInstructions) {
+                    finalPrompt += `\n\n**[Additional Guidelines]:**\n${customInstructions}`;
                 }
             }
 
