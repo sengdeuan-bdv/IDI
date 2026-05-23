@@ -108,8 +108,8 @@
 
                     <!-- Timestamp Toggle -->
                     <div class="mb-5 flex items-center gap-2">
-                        <input type="checkbox" id="timestamp-toggle" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer transition">
-                        <label for="timestamp-toggle" class="text-sm font-medium text-gray-700 cursor-pointer">ເພີ່ມເວລາ (Timestamps) ໃສ່ໜ້າແຖວ (ເຊື່ອມຕໍ່ເວລາກັນອັດຕະໂນມັດ)</label>
+                        <input type="checkbox" id="timestamp-toggle" checked class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer transition">
+                        <label for="timestamp-toggle" class="text-sm font-medium text-gray-700 cursor-pointer">ບັງຄັບໃສ່ເວລາ (Timestamps) ໄວ້ໜ້າແຖວສະເໝີ</label>
                     </div>
 
                     <!-- Custom Instructions / Manual -->
@@ -510,64 +510,78 @@
                 }
             }
 
-            // --- ປັບປຸງໃໝ່: ບັງຄັບໃຫ້ແຍກ Q ແລະ R ສະເໝີ ໃນທຸກໆຮູບແບບ ---
-            let baseRulesLao = `ຄຳສັ່ງສຳຄັນທີ່ສຸດ (ຂໍ້ບັງຄັບ):\n1. ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ.\n2. ຕ້ອງແຍກຜູ້ເວົ້າຢ່າງຊັດເຈນ ໂດຍຂຶ້ນແຖວໃໝ່ທຸກຄັ້ງທີ່ປ່ຽນຄົນເວົ້າ.\n3. ຂຶ້ນໜ້າແຖວໃໝ່ ຕ້ອງໃສ່ຄຳວ່າ "Q:" ສຳລັບຜູ້ຖາມ ແລະ "R:" ສຳລັບຜູ້ຕອບ ສະເໝີ ຫ້າມເອົາຄຳເວົ້າມາລວມກັນໃນຫຍໍ້ໜ້າດຽວເດັດຂາດ.`;
-            
-            let baseRulesEng = `Strict Instructions:\n1. Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio.\n2. Clearly identify speakers by starting a new line EVERY TIME the speaker changes.\n3. Prefix the questioner's line with "Q: " and the responder's line with "R: ". Do not combine different speakers into the same paragraph.`;
+            // 1. ສ້າງກົດເລື່ອງເວລາ (Timestamp Rules) ຖ້າຖືກຕິກເລືອກ
+            let timeStampRuleLao = "";
+            let timeStampRuleEng = "";
+            let exampleFormatLao = "";
+            let exampleFormatEng = "";
 
+            if (includeTimestamp) {
+                if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
+                    timeStampRuleLao = `\n4. **[ບັງຄັບເດັດຂາດ]**: ຕ້ອງໃສ່ເວລາ (Timestamp) ໄວ້ໜ້າທຸກໆແຖວ ຫຼື ທຸກຄັ້ງທີ່ປ່ຽນຄົນເວົ້າສະເໝີ! ເນື່ອງຈາກນີ້ເປັນຄິບຕໍ່ເນື່ອງ, ໃຫ້ເລີ່ມນັບເວລາຈາກ ${startTimeStr} ເປັນຕົ້ນໄປ (ຫ້າມເລີ່ມຈາກ 00:00).`;
+                    timeStampRuleEng = `\n4. **[CRITICAL]**: You MUST include a timestamp at the beginning of EVERY line! As this is a continuation, start timestamps from ${startTimeStr} onwards (DO NOT start at 00:00).`;
+                    
+                    exampleFormatLao = `\n\n**ຕົວຢ່າງຮູບແບບການຕອບທີ່ຕ້ອງການ:**\n${startTimeStr} Q: ສະບາຍດີມື້ນີ້ເປັນແນວໃດ?\n[${formatTime(startTimeSeconds + 5)}] R: ສະບາຍດີ ຂ້ອຍສະບາຍດີ...`;
+                    exampleFormatEng = `\n\n**Expected Output Format:**\n${startTimeStr} Q: Hello, how are you?\n[${formatTime(startTimeSeconds + 5)}] R: I am doing well...`;
+                } else {
+                    timeStampRuleLao = `\n4. **[ບັງຄັບເດັດຂາດ]**: ຕ້ອງໃສ່ເວລາ (Timestamp) ເຊັ່ນ [00:00] ໄວ້ໜ້າທຸກໆແຖວ ຫຼື ທຸກຄັ້ງທີ່ປ່ຽນຄົນເວົ້າສະເໝີ!`;
+                    timeStampRuleEng = `\n4. **[CRITICAL]**: You MUST include a timestamp (e.g., [00:00]) at the beginning of EVERY line!`;
+                    
+                    exampleFormatLao = `\n\n**ຕົວຢ່າງຮູບແບບການຕອບທີ່ຕ້ອງການ:**\n[00:00] Q: ສະບາຍດີມື້ນີ້ເປັນແນວໃດ?\n[00:05] R: ສະບາຍດີ ຂ້ອຍສະບາຍດີ...`;
+                    exampleFormatEng = `\n\n**Expected Output Format:**\n[00:00] Q: Hello, how are you?\n[00:05] R: I am doing well...`;
+                }
+            }
+
+            // 2. ສ້າງກົດພື້ນຖານທີ່ບັງຄັບໃຊ້ກັບທຸກໆໂໝດ
+            let baseRulesLao = `ຄຳສັ່ງສຳຄັນທີ່ສຸດ (ຂໍ້ບັງຄັບ):\n1. ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ.\n2. ຕ້ອງແຍກຜູ້ເວົ້າຢ່າງຊັດເຈນ ໂດຍຂຶ້ນແຖວໃໝ່ທຸກຄັ້ງທີ່ປ່ຽນຄົນເວົ້າ.\n3. ຂຶ້ນໜ້າແຖວໃໝ່ ຕ້ອງໃສ່ຄຳວ່າ "Q:" ສຳລັບຜູ້ຖາມ ແລະ "R:" ສຳລັບຜູ້ຕອບ ສະເໝີ ຫ້າມເອົາຄຳເວົ້າມາລວມກັນໃນຫຍໍ້ໜ້າດຽວເດັດຂາດ.${timeStampRuleLao}`;
+            
+            let baseRulesEng = `Strict Instructions:\n1. Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio.\n2. Clearly identify speakers by starting a new line EVERY TIME the speaker changes.\n3. Prefix the questioner's line with "Q: " and the responder's line with "R: ". Do not combine different speakers into the same paragraph.${timeStampRuleEng}`;
+
+            // 3. ເພີ່ມກົດສະເພາະຂອງແຕ່ລະໂໝດ (ໃຊ້ເຄື່ອງໝາຍ - ແທນຕົວເລກ ເພື່ອບໍ່ໃຫ້ຊ້ຳກັບຂໍ້ 1-4 ຂ້າງເທິງ)
             if (language === 'lao') {
                 if (mode === 'general' || mode === 'interview' || mode === 'interview_natural_full') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n4. ໃຫ້ຖອດທຸກຄຳເວົ້າຕັ້ງແຕ່ຕົ້ນຈົນຈົບຄິບສຽງແບບຄົບຖ້ວນທຸກປະການ (Word-for-word). ຫ້າມຕັດຫຍໍ້ ແລະ ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ.`;
+                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n- ໃຫ້ຖອດທຸກຄຳເວົ້າຕັ້ງແຕ່ຕົ້ນຈົນຈົບຄິບສຽງແບບຄົບຖ້ວນທຸກປະການ (Word-for-word). ຫ້າມຕັດຫຍໍ້ ແລະ ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ.`;
                 } else if (mode === 'idi_intelligent_verbatim') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n4. **ອົງປະກອບທີ່ຕ້ອງຕັດອອກ:** ການເວົ້າກຶກໆກັກໆ, ຄຳເວົ້າທີ່ບໍ່ສົມບູນ, ປະໂຫຍກສັ້ນໆທີ່ບໍ່ຄົບຖ້ວນ, ຄຳເວົ້າເສີມ/ຄຳໂຕງໂຕ້ຍ (ເຊັ່ນ: "ເອີ", "ອາ", "ສະນັ້ນ", "ແບບວ່າ"), ສຽງທີ່ບໍ່ແມ່ນການເວົ້າ, ການເລີ່ມຕົ້ນປະໂຫຍກທີ່ຜິດພາດ (False starts), ແລະ ຄຳສັບທີ່ເວົ້າຊ້ຳໆເປັນນິດໄສທີ່ບໍ່ມີປະໂຫຍດ.\n5. **ສິ່ງທີ່ຕ້ອງຮັກສາໄວ້:** ສຽງຫົວ ແລະ ປະຄຳອຸທານທີ່ຊ່ວຍສ້າງບໍລິບົດ (ເຊັ່ນ: "ເອີ... ເຮີ້ຍ").\n6. ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ.`;
+                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n- **ອົງປະກອບທີ່ຕ້ອງຕັດອອກ:** ການເວົ້າກຶກໆກັກໆ, ຄຳເວົ້າທີ່ບໍ່ສົມບູນ, ປະໂຫຍກສັ້ນໆທີ່ບໍ່ຄົບຖ້ວນ, ຄຳເວົ້າເສີມ/ຄຳໂຕງໂຕ້ຍ (ເຊັ່ນ: "ເອີ", "ອາ", "ສະນັ້ນ", "ແບບວ່າ"), ສຽງທີ່ບໍ່ແມ່ນການເວົ້າ, ການເລີ່ມຕົ້ນປະໂຫຍກທີ່ຜິດພາດ (False starts), ແລະ ຄຳສັບທີ່ເວົ້າຊ້ຳໆເປັນນິດໄສທີ່ບໍ່ມີປະໂຫຍດ.\n- **ສິ່ງທີ່ຕ້ອງຮັກສາໄວ້:** ສຽງຫົວ ແລະ ປະຄຳອຸທານທີ່ຊ່ວຍສ້າງບໍລິບົດ (ເຊັ່ນ: "ເອີ... ເຮີ້ຍ").\n- ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ.`;
                 } else if (mode === 'general_clean_original') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n4. ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ "ຕັດສະເພາະປະໂຫຍກ ຫຼື ວະລີທີ່ເວົ້າບໍ່ຈົບ, ບໍ່ຄົບຖ້ວນ, ຫຼື ຟັງແລ້ວບໍ່ສາມາດເຂົ້າໃຈຄວາມໝາຍໄດ້" ອອກໄປ. ສຳລັບປະໂຫຍກອື່ນໆທີ່ສົມບູນ ໃຫ້ຮັກສາໄວ້ຄືເກົ່າທຸກປະການ (Word-for-word). ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ.`;
+                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n- ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ "ຕັດສະເພາະປະໂຫຍກ ຫຼື ວະລີທີ່ເວົ້າບໍ່ຈົບ, ບໍ່ຄົບຖ້ວນ, ຫຼື ຟັງແລ້ວບໍ່ສາມາດເຂົ້າໃຈຄວາມໝາຍໄດ້" ອອກໄປ. ສຳລັບປະໂຫຍກອື່ນໆທີ່ສົມບູນ ໃຫ້ຮັກສາໄວ້ຄືເກົ່າທຸກປະການ (Word-for-word). ຫ້າມສະຫຼຸບຄວາມເດັດຂາດ.`;
                 } else if (mode === 'general_clean_balanced') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n4. ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ "ຕັດສະເພາະປະໂຫຍກ ຫຼື ວະລີທີ່ເວົ້າບໍ່ຈົບ, ບໍ່ຄົບຖ້ວນ, ຫຼື ຟັງແລ້ວບໍ່ສາມາດເຂົ້າໃຈຄວາມໝາຍໄດ້" ອອກໄປ **ແຕ່ລະວັງຢ່າຕັດອອກຫຼາຍເກີນໄປຈົນເສຍເນື້ອໃນ**.\n5. ອະນຸຍາດໃຫ້ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລ (ເຊັ່ນ: ເອີ, ອ່າ, ແບບວ່າ) ອອກໄດ້ບາງສ່ວນເພື່ອຄວາມສະອາດ ແຕ່ **ບໍ່ໃຫ້ຕັດອອກທັງໝົດ** ເພື່ອຮັກສາຄວາມເປັນທຳມະຊາດໄວ້. ສຳລັບປະໂຫຍກອື່ນໆທີ່ສົມບູນ ໃຫ້ຮັກສາໄວ້ຄືເກົ່າທຸກປະການ (Word-for-word). ຫ້າມສະຫຼຸບຄວາມ.`;
+                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n- ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ "ຕັດສະເພາະປະໂຫຍກ ຫຼື ວະລີທີ່ເວົ້າບໍ່ຈົບ, ບໍ່ຄົບຖ້ວນ, ຫຼື ຟັງແລ້ວບໍ່ສາມາດເຂົ້າໃຈຄວາມໝາຍໄດ້" ອອກໄປ **ແຕ່ລະວັງຢ່າຕັດອອກຫຼາຍເກີນໄປຈົນເສຍເນື້ອໃນ**.\n- ອະນຸຍາດໃຫ້ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລ (ເຊັ່ນ: ເອີ, ອ່າ, ແບບວ່າ) ອອກໄດ້ບາງສ່ວນເພື່ອຄວາມສະອາດ ແຕ່ **ບໍ່ໃຫ້ຕັດອອກທັງໝົດ** ເພື່ອຮັກສາຄວາມເປັນທຳມະຊາດໄວ້. ສຳລັບປະໂຫຍກອື່ນໆທີ່ສົມບູນ ໃຫ້ຮັກສາໄວ້ຄືເກົ່າທຸກປະການ (Word-for-word). ຫ້າມສະຫຼຸບຄວາມ.`;
                 } else if (mode === 'nofiller') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n4. ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກທັງໝົດ (ເຊັ່ນ: ເອີ, ອ່າ, ແບບວ່າ, ກະຄືວ່າ, ອັນນັ້ນ) ເພື່ອໃຫ້ອ່ານງ່າຍຂຶ້ນ ໂດຍຮັກສາເນື້ອໃນສຳຄັນໄວ້ໃຫ້ຄົບຖ້ວນທຸກປະການ. ຫ້າມສະຫຼຸບຄວາມ.`;
+                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n- ໃຫ້ຖອດຂໍ້ຄວາມຕັ້ງແຕ່ຕົ້ນຈົນຈົບ ແຕ່ໃຫ້ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກທັງໝົດ (ເຊັ່ນ: ເອີ, ອ່າ, ແບບວ່າ, ກະຄືວ່າ, ອັນນັ້ນ) ເພື່ອໃຫ້ອ່ານງ່າຍຂຶ້ນ ໂດຍຮັກສາເນື້ອໃນສຳຄັນໄວ້ໃຫ້ຄົບຖ້ວນທຸກປະການ. ຫ້າມສະຫຼຸບຄວາມ.`;
                 } else if (mode === 'summary_natural' || mode === 'summary_interview') {
-                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n4. ໃຫ້ຖອດສຽງແລ້ວສັງລວມເນື້ອໃນໃຫ້ເຂົ້າໃຈງ່າຍຂຶ້ນ ແຕ່ **ຫ້າມຄັດຫຍໍ້ຈົນສັ້ນເກີນໄປ**. ໃຫ້ຮັກສາຄວາມໝາຍເດີມ ແລະ ຄວາມເປັນທຳມະຊາດຂອງການສົນທະນາໄວ້ໃຫ້ຄົບຖ້ວນ.\n5. ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກທັງໝົດ.`;
+                    finalPrompt = `${prefixContext}ກະລຸນາຖອດສຽງຈາກໄຟລ໌ສຽງທີ່ແນບມານີ້ ຊື່ໄຟລ໌ "${filename}" ເປັນພາສາລາວ.\n\n${baseRulesLao}\n- ໃຫ້ຖອດສຽງແລ້ວສັງລວມເນື້ອໃນໃຫ້ເຂົ້າໃຈງ່າຍຂຶ້ນ ແຕ່ **ຫ້າມຄັດຫຍໍ້ຈົນສັ້ນເກີນໄປ**. ໃຫ້ຮັກສາຄວາມໝາຍເດີມ ແລະ ຄວາມເປັນທຳມະຊາດຂອງການສົນທະນາໄວ້ໃຫ້ຄົບຖ້ວນ.\n- ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ຫຼື ຄຳລັງເລອອກທັງໝົດ.`;
                 }
             } else { // English
                 if (mode === 'general' || mode === 'interview' || mode === 'interview_natural_full') {
-                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n4. Transcribe completely and verbatim (Word-for-word). DO NOT summarize, DO NOT skip any parts, and DO NOT shorten the text.`;
+                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n- Transcribe completely and verbatim (Word-for-word). DO NOT summarize, DO NOT skip any parts, and DO NOT shorten the text.`;
                 } else if (mode === 'idi_intelligent_verbatim') {
-                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n4. **Elements to REMOVE:** Stutters, incomplete words, short incomplete sentences, filler words (e.g., "uh", "um", "so", "like"), non-speech sounds (e.g., coughs, throat clearing), false starts, and habitually repeated words that do not add value to the content.\n5. **Elements to KEEP:** Laughter (as it shows the overall emotion and banter) and meaningful interjections (e.g., "uh-huh", "oh", "hey") that help build context.\n6. DO NOT summarize the text.`;
+                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n- **Elements to REMOVE:** Stutters, incomplete words, short incomplete sentences, filler words (e.g., "uh", "um", "so", "like"), non-speech sounds (e.g., coughs, throat clearing), false starts, and habitually repeated words that do not add value to the content.\n- **Elements to KEEP:** Laughter (as it shows the overall emotion and banter) and meaningful interjections (e.g., "uh-huh", "oh", "hey") that help build context.\n- DO NOT summarize the text.`;
                 } else if (mode === 'general_clean_original') {
-                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n4. Transcribe from start to finish, but specifically REMOVE any incomplete sentences, cut-off phrases, or segments that are completely incomprehensible. Keep all other complete and meaningful content exactly as spoken (Word-for-word). DO NOT summarize.`;
+                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n- Transcribe from start to finish, but specifically REMOVE any incomplete sentences, cut-off phrases, or segments that are completely incomprehensible. Keep all other complete and meaningful content exactly as spoken (Word-for-word). DO NOT summarize.`;
                 } else if (mode === 'general_clean_balanced') {
-                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n4. Transcribe from start to finish, but specifically REMOVE any incomplete sentences, cut-off phrases, or segments that are completely incomprehensible, **but be very careful not to remove too much content**.\n5. You may remove SOME filler words (e.g., um, ah, er) to clean up the text, but **DO NOT remove all of them** in order to maintain a natural flow. Keep all other complete and meaningful content exactly as spoken (Word-for-word). DO NOT summarize.`;
+                    finalPrompt = `${prefixContext}Please accurately transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n- Transcribe from start to finish, but specifically REMOVE any incomplete sentences, cut-off phrases, or segments that are completely incomprehensible, **but be very careful not to remove too much content**.\n- You may remove SOME filler words (e.g., um, ah, er) to clean up the text, but **DO NOT remove all of them** in order to maintain a natural flow. Keep all other complete and meaningful content exactly as spoken (Word-for-word). DO NOT summarize.`;
                 } else if (mode === 'nofiller') {
-                    finalPrompt = `${prefixContext}Please transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n4. Provide a full transcription from start to finish, but please REMOVE filler words, stutters, and hesitation marks (e.g., um, ah, er, like, you know). Keep the core message and flow completely intact. DO NOT summarize.`;
+                    finalPrompt = `${prefixContext}Please transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n- Provide a full transcription from start to finish, but please REMOVE filler words, stutters, and hesitation marks (e.g., um, ah, er, like, you know). Keep the core message and flow completely intact. DO NOT summarize.`;
                 } else if (mode === 'summary_natural' || mode === 'summary_interview') {
-                    finalPrompt = `${prefixContext}Please transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n4. Thoughtfully summarize the content for clarity, but **DO NOT over-abbreviate**. Maintain the original meaning and natural conversational flow.\n5. Remove all filler words, stutters, and hesitation marks.`;
+                    finalPrompt = `${prefixContext}Please transcribe the attached audio file named "${filename}" into English.\n\n${baseRulesEng}\n- Thoughtfully summarize the content for clarity, but **DO NOT over-abbreviate**. Maintain the original meaning and natural conversational flow.\n- Remove all filler words, stutters, and hesitation marks.`;
                 }
             }
 
-            if (includeTimestamp) {
-                if (language === 'lao') {
-                    finalPrompt += `\n\n[ຄຳສັ່ງເພີ່ມເຕີມ]: ກະລຸນາໃສ່ເວລາ (Timestamp) ໄວ້ທາງໜ້າຂອງທຸກໆແຖວ, ທຸກໆຫຍໍ້ໜ້າ, ຫຼື ທຸກໆຄັ້ງທີ່ມີການປ່ຽນຄົນເວົ້າ.`;
-                    if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
-                        finalPrompt += `\n**ສຳຄັນຫຼາຍ**: ເນື່ອງຈາກນີ້ແມ່ນຄິບສຽງສ່ວນຕໍ່ເນື່ອງ ໃຫ້ກຳນົດວ່າ "ວິນາທີທີ 0" ຂອງຄິບສຽງທີ່ອັບໂຫຼດນີ້ ຄືເວລາ ${startTimeStr} ຂອງຄິບເຕັມ. ດັ່ງນັ້ນ ໃຫ້ເລີ່ມຕົ້ນຂຽນເວລາ (Timestamp) ຈາກ ${startTimeStr} ເປັນຕົ້ນໄປ (ຫ້າມເລີ່ມຈາກ 00:00 ເດັດຂາດ).`;
-                    } else {
-                        finalPrompt += ` (ເຊັ່ນ: [00:00])`;
-                    }
-                } else {
-                    finalPrompt += `\n\n[Additional Instruction]: Please include a timestamp at the beginning of every line, paragraph, or every time the speaker changes.`;
-                    if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
-                        finalPrompt += `\n**CRITICAL**: Since this is a continuation audio part, you MUST treat the 0-second mark of this specific audio file as ${startTimeStr} in the full interview context. Start all timestamps from ${startTimeStr} onwards (DO NOT start from 00:00).`;
-                    } else {
-                        finalPrompt += ` (e.g., [00:00])`;
-                    }
-                }
-            }
-
+            // 4. ເພີ່ມຄຳສັ່ງ Custom ແລະ ຕົວຢ່າງຮູບແບບໄວ້ລຸ່ມສຸດ
             if (customInstructions) {
                 if (language === 'lao') {
                     finalPrompt += `\n\n[ຄູ່ມື / ຂໍ້ແນະນຳເພີ່ມເຕີມສຳລັບການແກະສຽງ]:\n${customInstructions}`;
                 } else {
                     finalPrompt += `\n\n[Additional Transcription Guidelines / Manual]:\n${customInstructions}`;
+                }
+            }
+
+            if (includeTimestamp) {
+                if (language === 'lao') {
+                    finalPrompt += exampleFormatLao;
+                } else {
+                    finalPrompt += exampleFormatEng;
                 }
             }
 
