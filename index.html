@@ -95,6 +95,8 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">ຮູບແບບການຖອດສຽງ (Transcription Mode)</label>
                         <select id="mode-select" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition">
                             <option value="general">ຖອດສຽງທົ່ວໄປ (Word-for-word + ແຍກ Q-R ສະເໝີ)</option>
+                            <option value="advanced_events">ຖອດສຽງທົ່ວໄປ (ຕັດໂຕງໂຕ້ຍບາງສ່ວນ, ລະບຸອາລົມ/ສຽງແຊກຊ້ອນ, ເວລາ 5 ນາທີ)</option>
+                            <option value="advanced_events_no_filler">ຖອດສຽງທົ່ວໄປ (ຕັດໂຕງໂຕ້ຍອອກ 100% ເພື່ອແປງ່າຍ, ລະບຸອາລົມ/ສຽງແຊກຊ້ອນ, ເວລາ 5 ນາທີ)</option>
                             <option value="idi_intelligent_verbatim">ຖອດສຽງແບບສະອາດ (ຕັດຄຳຂີ້ເຫຍື້ອ, False starts + ແຍກ Q-R)</option>
                             <option value="general_clean_original">ຖອດສຽງທົ່ວໄປ, ຕັດແຕ່ປະໂຍກທີ່ບໍ່ຄົບຖ້ວນ (+ ແຍກ Q-R)</option>
                             <option value="general_clean_balanced">ຖອດສຽງທົ່ວໄປ, ຕັດປະໂຫຍກບໍ່ຄົບຖ້ວນ, ຕັດໂຕງໂຕ້ຍບາງສ່ວນ (+ ແຍກ Q-R)</option>
@@ -511,30 +513,49 @@
                 }
             }
 
+            // --- ກຳນົດຊື່ຜູ້ເວົ້າຕາມໂໝດ ---
+            let qLabel = (mode === 'advanced_events' || mode === 'advanced_events_no_filler') ? "Interviewer" : "Q";
+            let rLabel = (mode === 'advanced_events' || mode === 'advanced_events_no_filler') ? "Respondent" : "R";
+
             // 2. MANDATORY TEMPLATE (Put at the top to force AI to format first)
             let templateBlockLao = "";
             let templateBlockEng = "";
 
             if (includeTimestamp) {
-                let startT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? startTimeStr : "[00:00]";
-                let nextT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? `[${formatTime(startTimeSeconds + 5)}]` : "[00:05]";
+                let startT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? startTimeStr : "[00:02]";
                 
-                templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ! ຫ້າມລືມໃສ່ເວລາ (Timestamp) ເດັດຂາດ. **ຖ້າອ່ານເວລາແທ້ໆຈາກໄຟລ໌ບໍ່ໄດ້, ເຈົ້າຕ້ອງ "ປະເມີນ (Estimate)" ຫຼື ກະຕວງເວລາຂຶ້ນມາຕາມຄວາມຍາວຂອງສຽງ! ຫ້າມບໍ່ໃສ່ເວລາເດັດຂາດ.**\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${startT} Q:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n${nextT} R:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\`\`\`\n\n`;
-                
-                templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below! Do not forget the Timestamps. **If you cannot read exact metadata, you MUST estimate the timestamps based on audio length! Never omit timestamps.**\n\n**MANDATORY FORMAT:**\n\`\`\`text\n${startT} Q:\n    (Type question here, indented by 1 Tab)\n${nextT} R:\n    (Type response here, indented by 1 Tab)\n\`\`\`\n\n`;
+                if (mode === 'advanced_events' || mode === 'advanced_events_no_filler') {
+                    // ສຳລັບໂໝດ Advanced ໃຫ້ສະແດງຕົວຢ່າງການໂດດເວລາ 5 ນາທີ
+                    let nextT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? `[${formatTime(startTimeSeconds + 300)}]` : "[05:02]";
+                    
+                    templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ! ຫ້າມລືມໃສ່ເວລາ (Timestamp) ຕາມກົດທີ່ກຳນົດ. **ຖ້າອ່ານເວລາແທ້ໆຈາກໄຟລ໌ບໍ່ໄດ້, ເຈົ້າຕ້ອງ "ປະເມີນ (Estimate)" ເວລາຂຶ້ນມາເອງ!**\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${startT} ${qLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ)\n${nextT} ${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ເມື່ອເວລາຜ່ານໄປ 5 ນາທີ)\n\`\`\`\n\n`;
+                    
+                    templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below! Do not forget the Timestamps. **If you cannot read exact metadata, you MUST estimate the timestamps!**\n\n**MANDATORY FORMAT:**\n\`\`\`text\n${startT} ${qLabel}:\n    (Type question here, indented by 1 Tab)\n${rLabel}:\n    (Type response here)\n${nextT} ${rLabel}:\n    (Type response here after 5 minutes passed)\n\`\`\`\n\n`;
+                } else {
+                    // ສຳລັບໂໝດອື່ນໆ ໃສ່ເວລາທຸກແຖວຄືເກົ່າ
+                    let nextT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? `[${formatTime(startTimeSeconds + 5)}]` : "[00:07]";
+                    
+                    templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ! ຫ້າມລືມໃສ່ເວລາ (Timestamp) ເດັດຂາດ. **ຖ້າອ່ານເວລາແທ້ໆຈາກໄຟລ໌ບໍ່ໄດ້, ເຈົ້າຕ້ອງ "ປະເມີນ (Estimate)" ຫຼື ກະຕວງເວລາຂຶ້ນມາຕາມຄວາມຍາວຂອງສຽງ! ຫ້າມບໍ່ໃສ່ເວລາເດັດຂາດ.**\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${startT} ${qLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n${nextT} ${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\`\`\`\n\n`;
+                    
+                    templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below! Do not forget the Timestamps. **If you cannot read exact metadata, you MUST estimate the timestamps based on audio length! Never omit timestamps.**\n\n**MANDATORY FORMAT:**\n\`\`\`text\n${startT} ${qLabel}:\n    (Type question here, indented by 1 Tab)\n${nextT} ${rLabel}:\n    (Type response here, indented by 1 Tab)\n\`\`\`\n\n`;
+                }
             } else {
-                templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ!\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\nQ:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\nR:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\`\`\`\n\n`;
+                templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ!\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${qLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\`\`\`\n\n`;
                 
-                templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below!\n\n**MANDATORY FORMAT:**\n\`\`\`text\nQ:\n    (Type question here, indented by 1 Tab)\nR:\n    (Type response here, indented by 1 Tab)\n\`\`\`\n\n`;
+                templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below!\n\n**MANDATORY FORMAT:**\n\`\`\`text\n${qLabel}:\n    (Type question here, indented by 1 Tab)\n${rLabel}:\n    (Type response here, indented by 1 Tab)\n\`\`\`\n\n`;
             }
 
             // 3. Core Transcription Rules
-            let ruleLao = `**ກົດລະບຽບການແກະສຽງ:**\n1. ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ.\n2. ຕ້ອງແຍກຜູ້ເວົ້າຢ່າງຊັດເຈນ.\n`;
-            let ruleEng = `**Transcription Rules:**\n1. Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio.\n2. Clearly identify speakers.\n`;
+            let ruleLao = `**ກົດລະບຽບການແກະສຽງ:**\n1. ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ.\n2. ຕ້ອງແຍກຜູ້ເວົ້າຢ່າງຊັດເຈນ.\n3. **[ຮູບແບບການຂຽນ]**: ໃຫ້ຂຽນຊື່ຜູ້ເວົ້າ "${qLabel}:" (ສຳລັບຜູ້ຖາມ) ຫຼື "${rLabel}:" (ສຳລັບຜູ້ຕອບ) ໄວ້ແຖວເທິງ. ຈາກນັ້ນໃຫ້ "ລົງແຖວໃໝ່" ແລະ "ຫຍັບເຂົ້າ (Indent ດ້ວຍ Tab ຫຼື 4 ຍະຫວ່າງ)" ເພື່ອພິມຂໍ້ຄວາມທີ່ເຂົາເຈົ້າເວົ້າ.\n`;
+            let ruleEng = `**Transcription Rules:**\n1. Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio.\n2. Clearly identify speakers.\n3. **[Formatting Rule]**: Write the speaker label "${qLabel}:" (Questioner) or "${rLabel}:" (Respondent) on one line. Then, "start a new line" and "indent" to write their transcribed text.\n`;
 
             if (language === 'lao') {
                 if (mode === 'general' || mode === 'interview' || mode === 'interview_natural_full') {
-                    ruleLao += `3. ໃຫ້ຖອດທຸກຄຳເວົ້າຕັ້ງແຕ່ຕົ້ນຈົນຈົບຄິບສຽງແບບຄົບຖ້ວນທຸກປະການ (Word-for-word). ຫ້າມຕັດຫຍໍ້ ແລະ ຫ້າມສະຫຼຸບຄວາມ.`;
+                    ruleLao += `4. ໃຫ້ຖອດທຸກຄຳເວົ້າຕັ້ງແຕ່ຕົ້ນຈົນຈົບຄິບສຽງແບບຄົບຖ້ວນທຸກປະການ (Word-for-word). ຫ້າມຕັດຫຍໍ້ ແລະ ຫ້າມສະຫຼຸບຄວາມ.`;
+                } else if (mode === 'advanced_events') {
+                    ruleLao += `4. ໃຫ້ຖອດຂໍ້ຄວາມທົ່ວໄປ ແຕ່ໃຫ້ຕັດຄຳທີ່ບໍ່ເປັນປະໂຫຍດອອກ (ເຊັ່ນ: ອາ, ເອີ...).\n5. ຮັກສາຄຳທີ່ເປັນອາລົມ ຫຼື ຄຳສະແດງອາການໄວ້.\n6. **[ການໃສ່ເຫດການແຊກຊ້ອນ ແລະ ອາການ (ບັງຄັບ 100%)]**: ໃຫ້ເຈົ້າຟັງ ແລະ ບັນທຶກ "ທຸກໆສຽງແຊກຊ້ອນ ແລະ ທຸກໆອາການ" ທີ່ໄດ້ຍິນໃນຄິບສຽງລົງໃນວົງເລັບທັງໝົດ! ບໍ່ວ່າຈະເປັນການຢຸດ/ງຽບ (ຜູ້ຖືກສຳພາດງຽບ), ສຽງສະພາບແວດລ້ອມ (ສຽງລົດ, ສຽງໝາເຫົ່າ, ສຽງອັດປະຕູ, ສຽງໂທລະສັບ, ສຽງພິມຄີບອດ, ແລະອື່ນໆ), ສຽງສະແດງອາການ (ສຽງຖອນຫາຍໃຈ, ສຽງຫົວ, ສຽງໄອ, ສຽງຮ້ອງໄຫ້), ຫຼື ນ້ຳສຽງຕ່າງໆ (ສຽງສູງ, ສຽງເຂັ້ມ, ສຽງສັ່ນ, ຜ່ອນຄາຍ). ຫ້າມພາດເຫດການໃດໜຶ່ງເດັດຂາດ.`;
+                } else if (mode === 'advanced_events_no_filler') {
+                    ruleLao += `4. ໃຫ້ຖອດຂໍ້ຄວາມໂດຍ "ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ການເວົ້າກຶກໆກັກໆ, ແລະ ຄຳທີ່ບໍ່ມີຄວາມໝາຍອອກທັງໝົດ 100%" ເພື່ອໃຫ້ຂໍ້ຄວາມສະອາດທີ່ສຸດສຳລັບນຳໄປແປພາສາ.\n5. ຮັກສາຄຳທີ່ເປັນອາລົມ ຫຼື ຄຳສະແດງອາການໄວ້.\n6. **[ການໃສ່ເຫດການແຊກຊ້ອນ ແລະ ອາການ (ບັງຄັບ 100%)]**: ໃຫ້ເຈົ້າຟັງ ແລະ ບັນທຶກ "ທຸກໆສຽງແຊກຊ້ອນ ແລະ ທຸກໆອາການ" ທີ່ໄດ້ຍິນໃນຄິບສຽງລົງໃນວົງເລັບທັງໝົດ! ບໍ່ວ່າຈະເປັນການຢຸດ/ງຽບ (ຜູ້ຖືກສຳພາດງຽບ), ສຽງສະພາບແວດລ້ອມ (ສຽງລົດ, ສຽງໝາເຫົ່າ, ສຽງອັດປະຕູ, ສຽງໂທລະສັບ, ສຽງພິມຄີບອດ, ແລະອື່ນໆ), ສຽງສະແດງອາການ (ສຽງຖອນຫາຍໃຈ, ສຽງຫົວ, ສຽງໄອ, ສຽງຮ້ອງໄຫ້), ຫຼື ນ້ຳສຽງຕ່າງໆ (ສຽງສູງ, ສຽງເຂັ້ມ, ສຽງສັ່ນ, ຜ່ອນຄາຍ). ຫ້າມພາດເຫດການໃດໜຶ່ງເດັດຂາດ.`;
                 } else if (mode === 'idi_intelligent_verbatim') {
                     ruleLao += `3. **ສິ່ງທີ່ຕ້ອງຕັດອອກ:** ຕັດການເວົ້າກຶກໆກັກໆ, ປະໂຫຍກທີ່ເວົ້າບໍ່ຈົບ, ຄຳເວົ້າເສີມ/ຄຳໂຕງໂຕ້ຍ (ເຊັ່ນ: "ເອີ", "ອາ", "ສະນັ້ນ"), ການໄອ, ປະໂຫຍກທີ່ເລີ່ມຕົ້ນຜິດ (False starts).\n4. **ສິ່ງທີ່ຕ້ອງຮັກສາໄວ້:** ສຽງຫົວ ແລະ ປະຄຳອຸທານທີ່ຊ່ວຍສ້າງບໍລິບົດ (ເຊັ່ນ: "ເອີ... ເຮີ້ຍ"). ຫ້າມສະຫຼຸບຄວາມ.`;
                 } else if (mode === 'general_clean_original') {
@@ -548,7 +569,11 @@
                 }
             } else { // English
                 if (mode === 'general' || mode === 'interview' || mode === 'interview_natural_full') {
-                    ruleEng += `3. Transcribe completely and verbatim (Word-for-word). DO NOT summarize, DO NOT skip any parts.`;
+                    ruleEng += `4. Transcribe completely and verbatim (Word-for-word). DO NOT summarize, DO NOT skip any parts.`;
+                } else if (mode === 'advanced_events') {
+                    ruleEng += `4. Transcribe generally but remove useless filler words (e.g., ah, um...).\n5. Keep words expressing emotions or reactions.\n6. **[Event & Emotion Annotations (Mandatory 100%)]**: You MUST capture and annotate ALL background noises, events, and emotional expressions present in the audio inside parentheses! This includes pauses (Respondent is silent), environmental sounds (car passing, dog barking, door closing, phone ringing, typing, etc.), physical reactions (sighing, laughing, coughing, crying), and tone of voice (high pitch, intense, trembling, relaxed). Do not miss any audible event.`;
+                } else if (mode === 'advanced_events_no_filler') {
+                    ruleEng += `4. Transcribe the text but "REMOVE 100% of filler words, stutters, repetitions, and meaningless words" to ensure the text is as clean as possible for translation.\n5. Keep words expressing emotions or reactions.\n6. **[Event & Emotion Annotations (Mandatory 100%)]**: You MUST capture and annotate ALL background noises, events, and emotional expressions present in the audio inside parentheses! This includes pauses (Respondent is silent), environmental sounds (car passing, dog barking, door closing, phone ringing, typing, etc.), physical reactions (sighing, laughing, coughing, crying), and tone of voice (high pitch, intense, trembling, relaxed). Do not miss any audible event.`;
                 } else if (mode === 'idi_intelligent_verbatim') {
                     ruleEng += `3. **REMOVE:** Stutters, incomplete words, filler words, non-speech sounds, false starts.\n4. **KEEP:** Laughter and meaningful interjections (e.g., "uh-huh"). DO NOT summarize.`;
                 } else if (mode === 'general_clean_original') {
@@ -564,15 +589,34 @@
 
             // 4. ເພີ່ມກົດບັງຄັບເລື່ອງເວລາ (Timestamps Fallback)
             if (includeTimestamp) {
-                if (language === 'lao') {
-                    ruleLao += `\n**[ກົດເຫຼັກເລື່ອງເວລາ 100%]**: ຕ້ອງໃສ່ເວລາ (Timestamp) ເຊັ່ນ [00:00], [00:15] ໄວ້ໜ້າຊື່ຜູ້ເວົ້າ "ທຸກໆຄັ້ງ". **ຖ້າລະບົບບໍ່ເຫັນເວລາ ໃຫ້ປະເມີນ (Estimate) ເວລາຂຶ້ນມາເອງ!**`;
-                    if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
-                        ruleLao += ` ເນື່ອງຈາກນີ້ເປັນຄິບຕໍ່ເນື່ອງ, ໃຫ້ເລີ່ມນັບເວລາຈາກ ${startTimeStr} ຂຶ້ນໄປ (ຫ້າມເລີ່ມຈາກ 00:00).`;
+                let initialSilenceRuleLao = `\n**[ສຳຄັນຫຼາຍ]**: ເວລາທຳອິດ (Start Timestamp) ໃຫ້ເລີ່ມນັບຈາກວິນາທີທີ່ມີ "ສຽງເວົ້າເລີ່ມຕົ້ນແທ້ໆ". ຖ້າຕົ້ນຄິບມີຄວາມງຽບ ໃຫ້ຂ້າມຄວາມງຽບນັ້ນໄປ ແລະ ໃຊ້ເວລາທີ່ເລີ່ມມີສຽງເວົ້າເປັນຈຸດເລີ່ມຕົ້ນສະເໝີ.`;
+                let initialSilenceRuleEng = `\n**[CRITICAL]**: The starting timestamp must correspond to the exact second the actual speaking begins. Ignore any initial silence at the beginning of the recording.`;
+
+                if (mode === 'advanced_events' || mode === 'advanced_events_no_filler') {
+                    // ກົດ Timestamp ທຸກໆ 5 ນາທີສຳລັບໂໝດນີ້
+                    if (language === 'lao') {
+                        ruleLao += `\n**[ກົດເຫຼັກເລື່ອງເວລາ 100%]**: ໃຫ້ໃສ່ເວລາ (Timestamp) ປະມານ "ທຸກໆ 5 ນາທີ" ຫຼື ໃກ້ຄຽງກັບຜູ້ຕອບ (Respondent) ທີ່ສຸດໃນໄລຍະເວລານັ້ນ! (ບໍ່ຈຳເປັນຕ້ອງໃສ່ທຸກແຖວ). **ຖ້າລະບົບບໍ່ເຫັນເວລາ ໃຫ້ປະເມີນ (Estimate) ເວລາຂຶ້ນມາເອງ!**` + initialSilenceRuleLao;
+                        if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
+                            ruleLao += ` ເນື່ອງຈາກນີ້ເປັນຄິບຕໍ່ເນື່ອງ, ໃຫ້ເລີ່ມນັບເວລາຈາກ ${startTimeStr} ຂຶ້ນໄປ.`;
+                        }
+                    } else {
+                        ruleEng += `\n**[100% STRICT TIMESTAMP RULE]**: You MUST insert a Timestamp approximately "every 5 minutes" or close to the Respondent's turn during that interval (Not needed on every line). **If you cannot read the exact timing, you MUST ESTIMATE the timestamps!**` + initialSilenceRuleEng;
+                        if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
+                            ruleEng += ` This is a continuation clip. Start all timestamps from ${startTimeStr} onwards.`;
+                        }
                     }
                 } else {
-                    ruleEng += `\n**[100% STRICT TIMESTAMP RULE]**: You MUST insert a Timestamp (e.g., [00:00], [00:15]) before EVERY speaker change! **If you cannot read the exact timing, you MUST ESTIMATE the timestamps. Never output without timestamps.**`;
-                    if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
-                        ruleEng += ` This is a continuation clip. Start all timestamps from ${startTimeStr} onwards (DO NOT start from 00:00).`;
+                    // ກົດ Timestamp ປົກກະຕິ (ທຸກຄັ້ງທີ່ປ່ຽນຄົນເວົ້າ)
+                    if (language === 'lao') {
+                        ruleLao += `\n**[ກົດເຫຼັກເລື່ອງເວລາ 100%]**: ຕ້ອງໃສ່ເວລາ (Timestamp) ເຊັ່ນ [00:02], [00:15] ໄວ້ໜ້າຊື່ຜູ້ເວົ້າ "ທຸກໆຄັ້ງ". **ຖ້າລະບົບບໍ່ເຫັນເວລາ ໃຫ້ປະເມີນ (Estimate) ເວລາຂຶ້ນມາເອງ!**` + initialSilenceRuleLao;
+                        if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
+                            ruleLao += ` ເນື່ອງຈາກນີ້ເປັນຄິບຕໍ່ເນື່ອງ, ໃຫ້ເລີ່ມນັບເວລາຈາກ ${startTimeStr} ຂຶ້ນໄປ (ຫ້າມເລີ່ມຈາກ 00:00).`;
+                        }
+                    } else {
+                        ruleEng += `\n**[100% STRICT TIMESTAMP RULE]**: You MUST insert a Timestamp (e.g., [00:02], [00:15]) before EVERY speaker change! **If you cannot read the exact timing, you MUST ESTIMATE the timestamps. Never output without timestamps.**` + initialSilenceRuleEng;
+                        if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
+                            ruleEng += ` This is a continuation clip. Start all timestamps from ${startTimeStr} onwards (DO NOT start from 00:00).`;
+                        }
                     }
                 }
             }
