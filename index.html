@@ -111,7 +111,7 @@
                     <!-- Timestamp Toggle -->
                     <div class="mb-5 flex items-center gap-2 bg-blue-50 p-3 rounded-lg border border-blue-100">
                         <input type="checkbox" id="timestamp-toggle" checked class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 cursor-pointer transition">
-                        <label for="timestamp-toggle" class="text-sm font-semibold text-blue-800 cursor-pointer">ບັງຄັບໃສ່ເວລາ (Timestamps) ແລະ ຫຍັບແຖວສະເໝີ</label>
+                        <label for="timestamp-toggle" class="text-sm font-semibold text-blue-800 cursor-pointer">ບັງຄັບໃສ່ເວລາ (Timestamps) ທຸກ 5 ນາທີ ຫຼື ໄກ້ຄຽງ</label>
                     </div>
 
                     <!-- Custom Instructions / Manual -->
@@ -523,22 +523,11 @@
 
             if (includeTimestamp) {
                 let startT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? startTimeStr : "[00:02]";
+                let nextT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? `[${formatTime(startTimeSeconds + 300)}]` : "[05:02]";
                 
-                if (mode === 'advanced_events' || mode === 'advanced_events_no_filler') {
-                    // ສຳລັບໂໝດ Advanced ໃຫ້ສະແດງຕົວຢ່າງການໂດດເວລາ 5 ນາທີ
-                    let nextT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? `[${formatTime(startTimeSeconds + 300)}]` : "[05:02]";
-                    
-                    templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ! ຫ້າມລືມໃສ່ເວລາ (Timestamp) ຕາມກົດທີ່ກຳນົດ. **ຖ້າອ່ານເວລາແທ້ໆຈາກໄຟລ໌ບໍ່ໄດ້, ເຈົ້າຕ້ອງ "ປະເມີນ (Estimate)" ເວລາຂຶ້ນມາເອງ!**\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${startT} ${qLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ)\n${nextT} ${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ເມື່ອເວລາຜ່ານໄປ 5 ນາທີ)\n\`\`\`\n\n`;
-                    
-                    templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below! Do not forget the Timestamps. **If you cannot read exact metadata, you MUST estimate the timestamps!**\n\n**MANDATORY FORMAT:**\n\`\`\`text\n${startT} ${qLabel}:\n    (Type question here, indented by 1 Tab)\n${rLabel}:\n    (Type response here)\n${nextT} ${rLabel}:\n    (Type response here after 5 minutes passed)\n\`\`\`\n\n`;
-                } else {
-                    // ສຳລັບໂໝດອື່ນໆ ໃສ່ເວລາທຸກແຖວຄືເກົ່າ
-                    let nextT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? `[${formatTime(startTimeSeconds + 5)}]` : "[00:07]";
-                    
-                    templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ! ຫ້າມລືມໃສ່ເວລາ (Timestamp) ເດັດຂາດ. **ຖ້າອ່ານເວລາແທ້ໆຈາກໄຟລ໌ບໍ່ໄດ້, ເຈົ້າຕ້ອງ "ປະເມີນ (Estimate)" ຫຼື ກະຕວງເວລາຂຶ້ນມາຕາມຄວາມຍາວຂອງສຽງ! ຫ້າມບໍ່ໃສ່ເວລາເດັດຂາດ.**\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${startT} ${qLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n${nextT} ${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\`\`\`\n\n`;
-                    
-                    templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below! Do not forget the Timestamps. **If you cannot read exact metadata, you MUST estimate the timestamps based on audio length! Never omit timestamps.**\n\n**MANDATORY FORMAT:**\n\`\`\`text\n${startT} ${qLabel}:\n    (Type question here, indented by 1 Tab)\n${nextT} ${rLabel}:\n    (Type response here, indented by 1 Tab)\n\`\`\`\n\n`;
-                }
+                templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ! ຫ້າມລືມໃສ່ເວລາ (Timestamp) ຕາມກົດທີ່ກຳນົດ. **ຖ້າອ່ານເວລາແທ້ໆຈາກໄຟລ໌ບໍ່ໄດ້, ເຈົ້າຕ້ອງ "ປະເມີນ (Estimate)" ເວລາຂຶ້ນມາເອງ!**\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${startT} ${qLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ)\n${nextT} ${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ເມື່ອເວລາຜ່ານໄປ 5 ນາທີ ຫຼື ໃກ້ຄຽງ)\n\`\`\`\n\n`;
+                
+                templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below! Do not forget the Timestamps. **If you cannot read exact metadata, you MUST estimate the timestamps!**\n\n**MANDATORY FORMAT:**\n\`\`\`text\n${startT} ${qLabel}:\n    (Type question here, indented by 1 Tab)\n${rLabel}:\n    (Type response here)\n${nextT} ${rLabel}:\n    (Type response here after 5 minutes passed or closely)\n\`\`\`\n\n`;
             } else {
                 templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ!\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${qLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\`\`\`\n\n`;
                 
@@ -592,31 +581,15 @@
                 let initialSilenceRuleLao = `\n**[ສຳຄັນຫຼາຍ]**: ເວລາທຳອິດ (Start Timestamp) ໃຫ້ເລີ່ມນັບຈາກວິນາທີທີ່ມີ "ສຽງເວົ້າເລີ່ມຕົ້ນແທ້ໆ". ຖ້າຕົ້ນຄິບມີຄວາມງຽບ ໃຫ້ຂ້າມຄວາມງຽບນັ້ນໄປ ແລະ ໃຊ້ເວລາທີ່ເລີ່ມມີສຽງເວົ້າເປັນຈຸດເລີ່ມຕົ້ນສະເໝີ.`;
                 let initialSilenceRuleEng = `\n**[CRITICAL]**: The starting timestamp must correspond to the exact second the actual speaking begins. Ignore any initial silence at the beginning of the recording.`;
 
-                if (mode === 'advanced_events' || mode === 'advanced_events_no_filler') {
-                    // ກົດ Timestamp ທຸກໆ 5 ນາທີສຳລັບໂໝດນີ້
-                    if (language === 'lao') {
-                        ruleLao += `\n**[ກົດເຫຼັກເລື່ອງເວລາ 100%]**: ໃຫ້ໃສ່ເວລາ (Timestamp) ປະມານ "ທຸກໆ 5 ນາທີ" ຫຼື ໃກ້ຄຽງກັບຜູ້ຕອບ (Respondent) ທີ່ສຸດໃນໄລຍະເວລານັ້ນ! (ບໍ່ຈຳເປັນຕ້ອງໃສ່ທຸກແຖວ). **ຖ້າລະບົບບໍ່ເຫັນເວລາ ໃຫ້ປະເມີນ (Estimate) ເວລາຂຶ້ນມາເອງ!**` + initialSilenceRuleLao;
-                        if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
-                            ruleLao += ` ເນື່ອງຈາກນີ້ເປັນຄິບຕໍ່ເນື່ອງ, ໃຫ້ເລີ່ມນັບເວລາຈາກ ${startTimeStr} ຂຶ້ນໄປ.`;
-                        }
-                    } else {
-                        ruleEng += `\n**[100% STRICT TIMESTAMP RULE]**: You MUST insert a Timestamp approximately "every 5 minutes" or close to the Respondent's turn during that interval (Not needed on every line). **If you cannot read the exact timing, you MUST ESTIMATE the timestamps!**` + initialSilenceRuleEng;
-                        if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
-                            ruleEng += ` This is a continuation clip. Start all timestamps from ${startTimeStr} onwards.`;
-                        }
+                if (language === 'lao') {
+                    ruleLao += `\n**[ກົດເຫຼັກເລື່ອງເວລາ 100%]**: ໃຫ້ໃສ່ເວລາ (Timestamp) ປະມານ "ທຸກໆ 5 ນາທີ" ຫຼື ໃກ້ຄຽງກັບຜູ້ຕອບ (${rLabel}) ທີ່ສຸດໃນໄລຍະເວລານັ້ນ! (ບໍ່ຈຳເປັນຕ້ອງໃສ່ທຸກແຖວ). **ຖ້າລະບົບບໍ່ເຫັນເວລາ ໃຫ້ປະເມີນ (Estimate) ເວລາຂຶ້ນມາເອງ!**` + initialSilenceRuleLao;
+                    if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
+                        ruleLao += ` ເນື່ອງຈາກນີ້ເປັນຄິບຕໍ່ເນື່ອງ, ໃຫ້ເລີ່ມນັບເວລາຈາກ ${startTimeStr} ຂຶ້ນໄປ.`;
                     }
                 } else {
-                    // ກົດ Timestamp ປົກກະຕິ (ທຸກຄັ້ງທີ່ປ່ຽນຄົນເວົ້າ)
-                    if (language === 'lao') {
-                        ruleLao += `\n**[ກົດເຫຼັກເລື່ອງເວລາ 100%]**: ຕ້ອງໃສ່ເວລາ (Timestamp) ເຊັ່ນ [00:02], [00:15] ໄວ້ໜ້າຊື່ຜູ້ເວົ້າ "ທຸກໆຄັ້ງ". **ຖ້າລະບົບບໍ່ເຫັນເວລາ ໃຫ້ປະເມີນ (Estimate) ເວລາຂຶ້ນມາເອງ!**` + initialSilenceRuleLao;
-                        if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
-                            ruleLao += ` ເນື່ອງຈາກນີ້ເປັນຄິບຕໍ່ເນື່ອງ, ໃຫ້ເລີ່ມນັບເວລາຈາກ ${startTimeStr} ຂຶ້ນໄປ (ຫ້າມເລີ່ມຈາກ 00:00).`;
-                        }
-                    } else {
-                        ruleEng += `\n**[100% STRICT TIMESTAMP RULE]**: You MUST insert a Timestamp (e.g., [00:02], [00:15]) before EVERY speaker change! **If you cannot read the exact timing, you MUST ESTIMATE the timestamps. Never output without timestamps.**` + initialSilenceRuleEng;
-                        if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
-                            ruleEng += ` This is a continuation clip. Start all timestamps from ${startTimeStr} onwards (DO NOT start from 00:00).`;
-                        }
+                    ruleEng += `\n**[100% STRICT TIMESTAMP RULE]**: You MUST insert a Timestamp approximately "every 5 minutes" or close to the ${rLabel}'s turn during that interval (Not needed on every line). **If you cannot read the exact timing, you MUST ESTIMATE the timestamps!**` + initialSilenceRuleEng;
+                    if (chunkId && chunkId > 1 && startTimeSeconds > 0) {
+                        ruleEng += ` This is a continuation clip. Start all timestamps from ${startTimeStr} onwards.`;
                     }
                 }
             }
