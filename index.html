@@ -374,8 +374,8 @@
             let start = 0;
             let partNumber = 1;
             
-            // ຄຳນວນຈຳນວນ Byte ສຳລັບ 10 ວິນາທີ (ເພື່ອໃຫ້ມີສ່ວນຊ້ອນທັບກັນ/Overlap ບໍ່ໃຫ້ຄຳເວົ້າຂາດຫາຍ)
-            let overlapSeconds = 10;
+            // ຄຳນວນຈຳນວນ Byte ສຳລັບ 5 ວິນາທີ (ເພື່ອໃຫ້ມີສ່ວນຊ້ອນທັບກັນ/Overlap ບໍ່ໃຫ້ຄຳເວົ້າຂາດຫາຍ)
+            let overlapSeconds = 5;
             let overlapBytes = 0;
             if (totalAudioDuration > 0 && currentFile.size > 0) {
                 let bytesPerSecond = currentFile.size / totalAudioDuration;
@@ -408,14 +408,14 @@
                 
                 if (end >= currentFile.size) break; // ຈົບໄຟລ໌
                 
-                // ຍ້າຍຈຸດເລີ່ມຕົ້ນຂອງຄິບຕໍ່ໄປຖອຍຫຼັງ ເພື່ອໃຫ້ມີການຊ້ອນທັບ (Overlap) 10 ວິນາທີ
+                // ຍ້າຍຈຸດເລີ່ມຕົ້ນຂອງຄິບຕໍ່ໄປຖອຍຫຼັງ ເພື່ອໃຫ້ມີການຊ້ອນທັບ (Overlap) 5 ວິນາທີ
                 start = end - overlapBytes;
                 partNumber++;
             }
             
             renderChunksUI();
             splitSection.classList.add('hidden');
-            showToast(`ແບ່ງໄຟລ໌ສຳເລັດ! ໄດ້ທັງໝົດ ${audioChunks.length} ຕອນ (ເຊື່ອມຕໍ່ສຽງ 10 ວິນາທີ).`, "success");
+            showToast(`ແບ່ງໄຟລ໌ສຳເລັດ! ໄດ້ທັງໝົດ ${audioChunks.length} ຕອນ (ເຊື່ອມຕໍ່ສຽງ 5 ວິນາທີ).`, "success");
         }
 
         function renderChunksUI() {
@@ -499,14 +499,14 @@
                 if (language === 'lao') {
                     prefixContext = `[ຂໍ້ມູນ: ນີ້ແມ່ນໄຟລ໌ສຽງ ຕອນທີ ${chunkId} ຈາກທັງໝົດ ${totalChunks} ຕອນ ຂອງໄຟລ໌ "${filename}"]\n`;
                     if (chunkId > 1) {
-                        prefixContext += `*ໝາຍເຫດ: 10 ວິນາທີທຳອິດເປັນການຊ້ອນທັບກັບຄິບກ່ອນໜ້າ ໃຫ້ຖອດສຽງຕໍ່ເນື່ອງກັນເລີຍ*\n\n`;
+                        prefixContext += `*ໝາຍເຫດ: 5 ວິນາທີທຳອິດເປັນການຊ້ອນທັບກັບຄິບກ່ອນໜ້າ ໃຫ້ຖອດສຽງຕໍ່ເນື່ອງກັນເລີຍ*\n\n`;
                     } else {
                         prefixContext += `\n`;
                     }
                 } else {
                     prefixContext = `[File Info: This is audio Part ${chunkId} of ${totalChunks} from the file "${filename}"]\n`;
                     if (chunkId > 1) {
-                        prefixContext += `*Note: The first 10 seconds overlap with the previous clip. Continue transcribing seamlessly.*\n\n`;
+                        prefixContext += `*Note: The first 5 seconds overlap with the previous clip. Continue transcribing seamlessly.*\n\n`;
                     } else {
                         prefixContext += `\n`;
                     }
@@ -552,9 +552,9 @@
                 if (mode === 'general' || mode === 'interview' || mode === 'interview_natural_full') {
                     ruleLao += `4. ໃຫ້ຖອດທຸກຄຳເວົ້າຕັ້ງແຕ່ຕົ້ນຈົນຈົບຄິບສຽງແບບຄົບຖ້ວນທຸກປະການ (Word-for-word). ຫ້າມຕັດຫຍໍ້ ແລະ ຫ້າມສະຫຼຸບຄວາມ.`;
                 } else if (mode === 'advanced_events') {
-                    ruleLao += `4. ໃຫ້ຖອດຂໍ້ຄວາມທົ່ວໄປ ແຕ່ໃຫ້ຕັດຄຳທີ່ບໍ່ເປັນປະໂຫຍດອອກ (ເຊັ່ນ: ອາ, ເອີ...).\n5. ຮັກສາຄຳທີ່ເປັນອາລົມ ຫຼື ຄຳສະແດງອາການໄວ້.\n6. **[ການໃສ່ເຫດການແຊກຊ້ອນ, ອາການ ແລະ ສຽງຊ້ອນ (ບັງຄັບ 100%)]**: ໃຫ້ຟັງ ແລະ ບັນທຶກທຸກສຽງແຊກຊ້ອນ, ອາການ ຫຼື ສຽງເວົ້າຊ້ອນກັນ (Crosstalk) ຂອງທັງຜູ້ຖາມແລະຜູ້ຕອບ ລົງໃນວົງເລັບ "ພ້ອມກັບລະບຸເວລາ" ໄວ້ໃນປະໂຫຍກສະເໝີ! ເຊັ່ນ: [crosstalk 00:50], [ຜູ້ຖືກສຳພາດງຽບ 01:10], [ສຽງລົດ 02:05], [ສຽງຫົວ 03:00], [ສຽງເຂັ້ມ 04:15]. ຫ້າມພາດເຫດການໃດໜຶ່ງເດັດຂາດ.`;
+                    ruleLao += `4. ໃຫ້ຖອດຂໍ້ຄວາມທົ່ວໄປ ແຕ່ໃຫ້ຕັດຄຳທີ່ບໍ່ເປັນປະໂຫຍດອອກ (ເຊັ່ນ: ອາ, ເອີ...).\n5. ຮັກສາຄຳທີ່ເປັນອາລົມ ຫຼື ຄຳສະແດງອາການໄວ້.\n6. **[ການໃສ່ເຫດການແຊກຊ້ອນ, ອາການ ແລະ ສຽງຊ້ອນ (ບັງຄັບ 100%)]**: ໃຫ້ຟັງ ແລະ ບັນທຶກທຸກສຽງແຊກຊ້ອນ, ອາການ ຫຼື ສຽງເວົ້າຊ້ອນກັນ (Crosstalk) ຂອງທັງຜູ້ຖາມແລະຜູ້ຕອບ ລົງໃນວົງເລັບ "ພ້ອມກັບລະບຸເວລາ" ໂດຍໃຫ້ແຊກໄວ້ໃນຈຸດທີ່ເກີດເຫດການຂຶ້ນແທ້ໆໃນປະໂຫຍກ (Inline)! **ຫ້າມເອົາໄປກອງໄວ້ທ້າຍປະໂຫຍກສະເໝີໄປ.** ເຊັ່ນ: "ຂ້ອຍຄິດວ່າ [ສຽງຫົວ 03:00] ມັນເປັນແບບນັ້ນແຫຼະ [crosstalk 03:05]". ຫ້າມພາດເຫດການໃດໜຶ່ງເດັດຂາດ.`;
                 } else if (mode === 'advanced_events_no_filler') {
-                    ruleLao += `4. ໃຫ້ຖອດຂໍ້ຄວາມໂດຍ "ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ການເວົ້າກຶກໆກັກໆ, ແລະ ຄຳທີ່ບໍ່ມີຄວາມໝາຍອອກທັງໝົດ 100%" ເພື່ອໃຫ້ຂໍ້ຄວາມສະອາດທີ່ສຸດສຳລັບນຳໄປແປພາສາ.\n5. ຮັກສາຄຳທີ່ເປັນອາລົມ ຫຼື ຄຳສະແດງອາການໄວ້.\n6. **[ການໃສ່ເຫດການແຊກຊ້ອນ, ອາການ ແລະ ສຽງຊ້ອນ (ບັງຄັບ 100%)]**: ໃຫ້ຟັງ ແລະ ບັນທຶກທຸກສຽງແຊກຊ້ອນ, ອາການ ຫຼື ສຽງເວົ້າຊ້ອນກັນ (Crosstalk) ຂອງທັງຜູ້ຖາມແລະຜູ້ຕອບ ລົງໃນວົງເລັບ "ພ້ອມກັບລະບຸເວລາ" ໄວ້ໃນປະໂຫຍກສະເໝີ! ເຊັ່ນ: [crosstalk 00:50], [ຜູ້ຖືກສຳພາດງຽບ 01:10], [ສຽງລົດ 02:05], [ສຽງຫົວ 03:00], [ສຽງເຂັ້ມ 04:15]. ຫ້າມພາດເຫດການໃດໜຶ່ງເດັດຂາດ.`;
+                    ruleLao += `4. ໃຫ້ຖອດຂໍ້ຄວາມໂດຍ "ຕັດຄຳໂຕງໂຕ້ຍ, ຄຳຊ້ຳ, ການເວົ້າກຶກໆກັກໆ, ແລະ ຄຳທີ່ບໍ່ມີຄວາມໝາຍອອກທັງໝົດ 100%" ເພື່ອໃຫ້ຂໍ້ຄວາມສະອາດທີ່ສຸດສຳລັບນຳໄປແປພາສາ.\n5. ຮັກສາຄຳທີ່ເປັນອາລົມ ຫຼື ຄຳສະແດງອາການໄວ້.\n6. **[ການໃສ່ເຫດການແຊກຊ້ອນ, ອາການ ແລະ ສຽງຊ້ອນ (ບັງຄັບ 100%)]**: ໃຫ້ຟັງ ແລະ ບັນທຶກທຸກສຽງແຊກຊ້ອນ, ອາການ ຫຼື ສຽງເວົ້າຊ້ອນກັນ (Crosstalk) ຂອງທັງຜູ້ຖາມແລະຜູ້ຕອບ ລົງໃນວົງເລັບ "ພ້ອມກັບລະບຸເວລາ" ໂດຍໃຫ້ແຊກໄວ້ໃນຈຸດທີ່ເກີດເຫດການຂຶ້ນແທ້ໆໃນປະໂຫຍກ (Inline)! **ຫ້າມເອົາໄປກອງໄວ້ທ້າຍປະໂຫຍກສະເໝີໄປ.** ເຊັ່ນ: "ຂ້ອຍຄິດວ່າ [ສຽງຫົວ 03:00] ມັນເປັນແບບນັ້ນແຫຼະ [crosstalk 03:05]". ຫ້າມພາດເຫດການໃດໜຶ່ງເດັດຂາດ.`;
                 } else if (mode === 'idi_intelligent_verbatim') {
                     ruleLao += `3. **ສິ່ງທີ່ຕ້ອງຕັດອອກ:** ຕັດການເວົ້າກຶກໆກັກໆ, ປະໂຫຍກທີ່ເວົ້າບໍ່ຈົບ, ຄຳເວົ້າເສີມ/ຄຳໂຕງໂຕ້ຍ (ເຊັ່ນ: "ເອີ", "ອາ", "ສະນັ້ນ"), ການໄອ, ປະໂຫຍກທີ່ເລີ່ມຕົ້ນຜິດ (False starts).\n4. **ສິ່ງທີ່ຕ້ອງຮັກສາໄວ້:** ສຽງຫົວ ແລະ ປະຄຳອຸທານທີ່ຊ່ວຍສ້າງບໍລິບົດ (ເຊັ່ນ: "ເອີ... ເຮີ້ຍ"). ຫ້າມສະຫຼຸບຄວາມ.`;
                 } else if (mode === 'general_clean_original') {
@@ -570,9 +570,9 @@
                 if (mode === 'general' || mode === 'interview' || mode === 'interview_natural_full') {
                     ruleEng += `4. Transcribe completely and verbatim (Word-for-word). DO NOT summarize, DO NOT skip any parts.`;
                 } else if (mode === 'advanced_events') {
-                    ruleEng += `4. Transcribe generally but remove useless filler words (e.g., ah, um...).\n5. Keep words expressing emotions or reactions.\n6. **[Event, Emotion & Crosstalk Annotations (Mandatory 100%)]**: You MUST capture ALL background noises, events, emotional expressions, or overlapping speech (crosstalk) from both interviewer and respondent inside brackets "WITH the exact timestamp" inline! For example: [crosstalk 00:50], [Respondent is silent 01:10], [car passing 02:05], [laughter 03:00], [intense voice 04:15]. Do not miss any audible event.`;
+                    ruleEng += `4. Transcribe generally but remove useless filler words (e.g., ah, um...).\n5. Keep words expressing emotions or reactions.\n6. **[Event, Emotion & Crosstalk Annotations (Mandatory 100%)]**: You MUST capture ALL background noises, events, emotional expressions, or overlapping speech (crosstalk) from both interviewer and respondent inside brackets "WITH the exact timestamp" inline exactly where it occurs in the sentence! **DO NOT just put them at the end of the sentence.** For example: "I think [laughter 03:00] it was [crosstalk 03:05]". Do not miss any audible event.`;
                 } else if (mode === 'advanced_events_no_filler') {
-                    ruleEng += `4. Transcribe the text but "REMOVE 100% of filler words, stutters, repetitions, and meaningless words" to ensure the text is as clean as possible for translation.\n5. Keep words expressing emotions or reactions.\n6. **[Event, Emotion & Crosstalk Annotations (Mandatory 100%)]**: You MUST capture ALL background noises, events, emotional expressions, or overlapping speech (crosstalk) from both interviewer and respondent inside brackets "WITH the exact timestamp" inline! For example: [crosstalk 00:50], [Respondent is silent 01:10], [car passing 02:05], [laughter 03:00], [intense voice 04:15]. Do not miss any audible event.`;
+                    ruleEng += `4. Transcribe the text but "REMOVE 100% of filler words, stutters, repetitions, and meaningless words" to ensure the text is as clean as possible for translation.\n5. Keep words expressing emotions or reactions.\n6. **[Event, Emotion & Crosstalk Annotations (Mandatory 100%)]**: You MUST capture ALL background noises, events, emotional expressions, or overlapping speech (crosstalk) from both interviewer and respondent inside brackets "WITH the exact timestamp" inline exactly where it occurs in the sentence! **DO NOT just put them at the end of the sentence.** For example: "I think [laughter 03:00] it was [crosstalk 03:05]". Do not miss any audible event.`;
                 } else if (mode === 'idi_intelligent_verbatim') {
                     ruleEng += `3. **REMOVE:** Stutters, incomplete words, filler words, non-speech sounds, false starts.\n4. **KEEP:** Laughter and meaningful interjections (e.g., "uh-huh"). DO NOT summarize.`;
                 } else if (mode === 'general_clean_original') {
