@@ -525,18 +525,28 @@
                 let startT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? startTimeStr : "[00:02]";
                 let nextT = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? `[${formatTime(startTimeSeconds + 300)}]` : "[05:02]";
                 
-                templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ! ຫ້າມລືມໃສ່ເວລາ (Timestamp) ຕາມກົດທີ່ກຳນົດ. **ຖ້າອ່ານເວລາແທ້ໆຈາກໄຟລ໌ບໍ່ໄດ້, ເຈົ້າຕ້ອງ "ປະເມີນ (Estimate)" ເວລາຂຶ້ນມາເອງ!**\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${startT} ${qLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ)\n${nextT} ${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ເມື່ອເວລາຜ່ານໄປ 5 ນາທີ ຫຼື ໃກ້ຄຽງ)\n\`\`\`\n\n`;
-                
-                templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below! Do not forget the Timestamps. **If you cannot read exact metadata, you MUST estimate the timestamps!**\n\n**MANDATORY FORMAT:**\n\`\`\`text\n${startT} ${qLabel}:\n    (Type question here, indented by 1 Tab)\n${rLabel}:\n    (Type response here)\n${nextT} ${rLabel}:\n    (Type response here after 5 minutes passed or closely)\n\`\`\`\n\n`;
+                if (mode === 'advanced_events' || mode === 'advanced_events_no_filler') {
+                    // ສຳລັບໂໝດ Advanced ໃຫ້ສະແດງຕົວຢ່າງການໂດດເວລາ 5 ນາທີ
+                    templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ! ຫ້າມລືມໃສ່ເວລາ (Timestamp) ຕາມກົດທີ່ກຳນົດ. **ຖ້າອ່ານເວລາແທ້ໆຈາກໄຟລ໌ບໍ່ໄດ້, ເຈົ້າຕ້ອງ "ປະເມີນ (Estimate)" ເວລາຂຶ້ນມາເອງ!**\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${startT} **${qLabel}:**\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\n**${rLabel}:**\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ)\n\n${nextT} **${rLabel}:**\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ເມື່ອເວລາຜ່ານໄປ 5 ນາທີ ຫຼື ໃກ້ຄຽງ)\n\`\`\`\n\n`;
+                    
+                    templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below! Do not forget the Timestamps. **If you cannot read exact metadata, you MUST estimate the timestamps!**\n\n**MANDATORY FORMAT:**\n\`\`\`text\n${startT} **${qLabel}:**\n    (Type question here, indented by 1 Tab)\n\n**${rLabel}:**\n    (Type response here)\n\n${nextT} **${rLabel}:**\n    (Type response here after 5 minutes passed or closely)\n\`\`\`\n\n`;
+                } else {
+                    // ສຳລັບໂໝດອື່ນໆ ໃສ່ເວລາທຸກແຖວຄືເກົ່າ
+                    let nextT2 = (chunkId && chunkId > 1 && startTimeSeconds > 0) ? `[${formatTime(startTimeSeconds + 5)}]` : "[00:07]";
+                    
+                    templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ! ຫ້າມລືມໃສ່ເວລາ (Timestamp) ເດັດຂາດ. **ຖ້າອ່ານເວລາແທ້ໆຈາກໄຟລ໌ບໍ່ໄດ້, ເຈົ້າຕ້ອງ "ປະເມີນ (Estimate)" ຫຼື ກະຕວງເວລາຂຶ້ນມາຕາມຄວາມຍາວຂອງສຽງ! ຫ້າມບໍ່ໃສ່ເວລາເດັດຂາດ.**\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${startT} **${qLabel}:**\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\n${nextT2} **${rLabel}:**\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\`\`\`\n\n`;
+                    
+                    templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below! Do not forget the Timestamps. **If you cannot read exact metadata, you MUST estimate the timestamps based on audio length! Never omit timestamps.**\n\n**MANDATORY FORMAT:**\n\`\`\`text\n${startT} **${qLabel}:**\n    (Type question here, indented by 1 Tab)\n\n${nextT2} **${rLabel}:**\n    (Type response here, indented by 1 Tab)\n\`\`\`\n\n`;
+                }
             } else {
-                templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ!\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n${qLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n${rLabel}:\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\`\`\`\n\n`;
+                templateBlockLao = `[ຄຳສັ່ງບັງຄັບສູງສຸດ]: ເຈົ້າຕ້ອງພິມຂໍ້ຄວາມອອກມາຕາມຮູບແບບໂຄງສ້າງດ້ານລຸ່ມນີ້ເທົ່ານັ້ນ!\n\n**ຮູບແບບການຕອບທີ່ບັງຄັບ (MANDATORY FORMAT):**\n\`\`\`text\n**${qLabel}:**\n    (ພິມຂໍ້ຄວາມທີ່ຖາມ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\n**${rLabel}:**\n    (ພິມຂໍ້ຄວາມທີ່ຕອບ ໂດຍຫຍັບເຂົ້າ 1 Tab)\n\`\`\`\n\n`;
                 
-                templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below!\n\n**MANDATORY FORMAT:**\n\`\`\`text\n${qLabel}:\n    (Type question here, indented by 1 Tab)\n${rLabel}:\n    (Type response here, indented by 1 Tab)\n\`\`\`\n\n`;
+                templateBlockEng = `[CRITICAL INSTRUCTION]: You MUST output the text EXACTLY in the structure below!\n\n**MANDATORY FORMAT:**\n\`\`\`text\n**${qLabel}:**\n    (Type question here, indented by 1 Tab)\n\n**${rLabel}:**\n    (Type response here, indented by 1 Tab)\n\`\`\`\n\n`;
             }
 
             // 3. Core Transcription Rules
-            let ruleLao = `**ກົດລະບຽບການແກະສຽງ:**\n1. ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ.\n2. ຕ້ອງແຍກຜູ້ເວົ້າຢ່າງຊັດເຈນ.\n3. **[ຮູບແບບການຂຽນ]**: ໃຫ້ຂຽນຊື່ຜູ້ເວົ້າ "${qLabel}:" (ສຳລັບຜູ້ຖາມ) ຫຼື "${rLabel}:" (ສຳລັບຜູ້ຕອບ) ໄວ້ແຖວເທິງ. ຈາກນັ້ນໃຫ້ "ລົງແຖວໃໝ່" ແລະ "ຫຍັບເຂົ້າ (Indent ດ້ວຍ Tab ຫຼື 4 ຍະຫວ່າງ)" ເພື່ອພິມຂໍ້ຄວາມທີ່ເຂົາເຈົ້າເວົ້າ.\n`;
-            let ruleEng = `**Transcription Rules:**\n1. Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio.\n2. Clearly identify speakers.\n3. **[Formatting Rule]**: Write the speaker label "${qLabel}:" (Questioner) or "${rLabel}:" (Respondent) on one line. Then, "start a new line" and "indent" to write their transcribed text.\n`;
+            let ruleLao = `**ກົດລະບຽບການແກະສຽງ:**\n1. ໃຫ້ຟັງ ແລະ ແກະສຽງຢ່າງລະອຽດທີ່ສຸດ ຫ້າມຂ້າມຊ່ວງໃດຊ່ວງໜຶ່ງຂອງຄິບສຽງເດັດຂາດ.\n2. ຕ້ອງແຍກຜູ້ເວົ້າຢ່າງຊັດເຈນ.\n3. **[ຮູບແບບການຂຽນ]**: ໃຫ້ຂຽນຊື່ຜູ້ເວົ້າເປັນຕົວໜັງສືເຂັ້ມ (Bold) "**${qLabel}:**" (ສຳລັບຜູ້ຖາມ) ຫຼື "**${rLabel}:**" (ສຳລັບຜູ້ຕອບ) ໄວ້ແຖວເທິງ. ຈາກນັ້ນໃຫ້ "ລົງແຖວໃໝ່" ແລະ "ຫຍັບເຂົ້າ (Indent ດ້ວຍ Tab ຫຼື 4 ຍະຫວ່າງ)" ເພື່ອພິມຂໍ້ຄວາມທີ່ເຂົາເຈົ້າເວົ້າ. **ສຳຄັນ: ເມື່ອສິ້ນສຸດປະໂຫຍກຂອງແຕ່ລະຄົນ ໃຫ້ຍະຫວ່າງລົງແຖວ (Enter 1 ແຖວຫວ່າງ) ກ່ອນຈະຂຶ້ນຊື່ຜູ້ເວົ້າຄົນຕໍ່ໄປ!**\n`;
+            let ruleEng = `**Transcription Rules:**\n1. Listen and transcribe as meticulously as possible. You absolutely MUST NOT skip any part of the audio.\n2. Clearly identify speakers.\n3. **[Formatting Rule]**: Write the speaker label in Bold "**${qLabel}:**" (Questioner) or "**${rLabel}:**" (Respondent) on one line. Then, "start a new line" and "indent" to write their transcribed text. **IMPORTANT: You MUST add an empty blank line (Enter) after each speaker's turn before the next speaker begins!**\n`;
 
             if (language === 'lao') {
                 if (mode === 'general' || mode === 'interview' || mode === 'interview_natural_full') {
@@ -646,6 +656,12 @@
                 return;
             }
 
+            // ແປງ Markdown ໃຫ້ເປັນ HTML ພື້ນຖານສຳລັບ Word (ເຊັ່ນ: **ຂໍ້ຄວາມ** ໃຫ້ກາຍເປັນຕົວເຂັ້ມ)
+            let formattedText = text;
+            formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); // ແປງ **text** ເປັນ <b>text</b>
+            formattedText = formattedText.replace(/\*(.*?)\*/g, '<i>$1</i>');     // ແປງ *text* ເປັນ <i>text</i> (ຖ້າມີ)
+            formattedText = formattedText.replace(/\n/g, '<br>');                 // ແປງການລົງແຖວ
+
             // Create a basic HTML structure that Word can read
             const htmlContent = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
@@ -659,7 +675,7 @@
                 </head>
                 <body>
                     <h2>Audio Transcript</h2>
-                    <div>${text.replace(/\n/g, '<br>')}</div>
+                    <div>${formattedText}</div>
                 </body>
                 </html>
             `;
